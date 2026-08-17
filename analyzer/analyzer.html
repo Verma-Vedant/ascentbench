@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Configure and run a transparent launch vehicle ascent simulation with traceable physics and orbital-state analysis.">
+  <meta name="theme-color" content="#07111b">
+  <meta property="og:title" content="Analyzer · Launch Vehicle Analyzer">
+  <meta property="og:description" content="Configure and run a transparent 2D launch vehicle ascent simulation with orbital-state analysis.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <title>Analyzer · Launch Vehicle Analyzer</title>
+
+  <link rel="stylesheet" href="analyzer.css">
+  <script type="module" src="analyzer.js"></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#analyzer-main">Skip to analyzer</a>
+
+  <header class="app-header">
+    <a class="brand" href="../index.html" aria-label="Launch Vehicle Analyzer home">
+      <span class="brand-mark">LVA</span>
+      <span class="brand-copy">
+        <strong>Launch Vehicle Analyzer</strong>
+        <small>Ascent analysis workspace</small>
+      </span>
+    </a>
+
+    <div class="header-model">
+      <span>MODEL</span>
+      <strong>2D · RK4 · SERIAL STAGING</strong>
+    </div>
+
+    <nav class="header-nav" aria-label="Analyzer navigation">
+      <a href="../index.html">Home</a>
+      <a href="#configuration">Configuration</a>
+      <a href="#results">Results</a>
+      <a href="../validation.html">Validation</a>
+      <a href="../limitations.html">Limitations</a>
+    </nav>
+  </header>
+
+  <main class="analyzer-shell" id="analyzer-main">
+    <section class="workspace-head" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">ANALYZER / INTEGRATED PHYSICS ENGINE</p>
+        <h1 id="page-title">Configure. Propagate. Inspect.</h1>
+        <p>
+          Define a serial-stage launch vehicle, choose the modeling assumptions, run the coupled
+          ascent simulation, and inspect how the final orbital state was produced.
+        </p>
+      </div>
+
+      <div class="engine-state" aria-label="Current engine composition">
+        <div><span>PHYSICS MODULES</span><strong>11</strong></div>
+        <div><span>ORCHESTRATION</span><strong>Event-aware</strong></div>
+        <div><span>OUTPUT</span><strong>Orbital state</strong></div>
+      </div>
+    </section>
+
+    <div class="workspace-grid">
+      <aside class="configuration-panel" id="configuration" aria-labelledby="config-title">
+        <div class="panel-heading sticky-heading">
+          <div>
+            <p class="panel-code">01 / INPUT</p>
+            <h2 id="config-title">Configuration</h2>
+          </div>
+          <button class="text-button" type="button" id="reset-example">Load example</button>
+        </div>
+
+        <form id="analyzer-form" novalidate>
+          <div class="error-summary" id="error-summary" role="alert" tabindex="-1" hidden>
+            <strong>Configuration needs attention</strong>
+            <p id="error-message"></p>
+          </div>
+
+          <fieldset class="input-group">
+            <legend>
+              <span>VEHICLE</span>
+              Definition
+            </legend>
+
+            <label class="field">
+              <span>Vehicle name</span>
+              <input id="vehicle-name" name="vehicleName" type="text" autocomplete="off" value="Example Two-Stage Vehicle">
+            </label>
+
+            <div class="field-grid two">
+              <label class="field">
+                <span>Payload mass <b>kg</b></span>
+                <input id="payload-mass" name="payloadMass" type="number" min="0" step="any" value="5000" required>
+              </label>
+
+              <label class="field">
+                <span>Stages</span>
+                <select id="stage-count" name="stageCount">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <div id="stages-container" class="stages-container" aria-live="polite"></div>
+
+          <fieldset class="input-group">
+            <legend>
+              <span>AERODYNAMICS</span>
+              Mach-Cd model
+            </legend>
+
+            <p class="group-help">
+              The example curve is an <strong>assumed generic model</strong>, not vehicle-specific aerodynamic data.
+              Replace it when real Cd information is available.
+            </p>
+
+            <div class="cd-table-wrap">
+              <table class="input-table" aria-label="Mach dependent drag coefficient table">
+                <thead>
+                  <tr>
+                    <th scope="col">Mach</th>
+                    <th scope="col">Cd</th>
+                    <th scope="col"><span class="sr-only">Remove row</span></th>
+                  </tr>
+                </thead>
+                <tbody id="cd-table-body"></tbody>
+              </table>
+            </div>
+
+            <button class="subtle-button" type="button" id="add-cd-row">+ Add Cd point</button>
+          </fieldset>
+
+          <fieldset class="input-group">
+            <legend>
+              <span>GUIDANCE</span>
+              Open-loop profile
+            </legend>
+
+            <label class="field">
+              <span>Profile</span>
+              <select id="guidance-type" name="guidanceType">
+                <option value="genericAssumed" selected>Generic assumed ascent profile</option>
+                <option value="pitchProgram">Custom pitch program</option>
+              </select>
+            </label>
+
+            <div class="assumption-note" id="generic-guidance-note">
+              <span>ASSUMPTION</span>
+              <p>
+                The generic profile is only a transparent simulator default. It is not calibrated to a real vehicle
+                and is not operational launch guidance.
+              </p>
+            </div>
+
+            <div id="custom-guidance" hidden>
+              <div class="field-grid two">
+                <label class="field">
+                  <span>Schedule coordinate</span>
+                  <select id="guidance-coordinate">
+                    <option value="altitude" selected>Altitude</option>
+                    <option value="time">Time</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Interpolation</span>
+                  <select id="guidance-interpolation">
+                    <option value="smoothstep" selected>Smoothstep</option>
+                    <option value="linear">Linear</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="guidance-table-wrap">
+                <table class="input-table" aria-label="Pitch-program control points">
+                  <thead>
+                    <tr>
+                      <th scope="col" id="guidance-coordinate-label">Altitude (km)</th>
+                      <th scope="col">Pitch (deg)</th>
+                      <th scope="col"><span class="sr-only">Remove row</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="guidance-table-body"></tbody>
+                </table>
+              </div>
+
+              <button class="subtle-button" type="button" id="add-guidance-row">+ Add control point</button>
+            </div>
+          </fieldset>
+
+          <details class="advanced-group">
+            <summary>
+              <span>
+                <b>Advanced simulation settings</b>
+                <small>Initial state, target orbit, solver, atmosphere</small>
+              </span>
+              <span aria-hidden="true">+</span>
+            </summary>
+
+            <div class="advanced-content">
+              <fieldset class="nested-fieldset">
+                <legend>Initial state</legend>
+
+                <div class="field-grid two">
+                  <label class="field">
+                    <span>Launch altitude <b>m</b></span>
+                    <input id="launch-altitude" type="number" min="0" step="any" value="0">
+                  </label>
+
+                  <label class="field">
+                    <span>Initial tangential velocity <b>m/s</b></span>
+                    <input id="initial-vy" type="number" step="any" value="0">
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="nested-fieldset">
+                <legend>Target orbit</legend>
+
+                <div class="field-grid three">
+                  <label class="field">
+                    <span>Periapsis <b>km</b></span>
+                    <input id="target-periapsis" type="number" min="0" step="any" value="200">
+                  </label>
+
+                  <label class="field">
+                    <span>Apoapsis <b>km</b></span>
+                    <input id="target-apoapsis" type="number" min="0" step="any" value="200">
+                  </label>
+
+                  <label class="field">
+                    <span>Tolerance <b>km</b></span>
+                    <input id="target-tolerance" type="number" min="0" step="any" value="20">
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="nested-fieldset">
+                <legend>Solver</legend>
+
+                <div class="field-grid three">
+                  <label class="field">
+                    <span>Time step <b>s</b></span>
+                    <input id="solver-dt" type="number" min="0.001" step="any" value="0.2">
+                  </label>
+
+                  <label class="field">
+                    <span>Max time <b>s</b></span>
+                    <input id="solver-max-time" type="number" min="1" step="any" value="900">
+                  </label>
+
+                  <label class="field">
+                    <span>Plot every N recorded states</span>
+                    <input id="solver-record-every" type="number" min="1" step="1" value="1">
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="nested-fieldset">
+                <legend>Environment</legend>
+
+                <div class="field-grid two">
+                  <label class="field">
+                    <span>Air velocity X <b>m/s</b></span>
+                    <input id="air-vx" type="number" step="any" value="0">
+                  </label>
+
+                  <label class="field">
+                    <span>Air velocity Y <b>m/s</b></span>
+                    <input id="air-vy" type="number" step="any" value="0">
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span>Above 86 km atmosphere behavior</span>
+                  <select id="above-atmosphere">
+                    <option value="vacuum" selected>Vacuum approximation</option>
+                    <option value="error">Stop with model-range error</option>
+                  </select>
+                </label>
+              </fieldset>
+            </div>
+          </details>
+
+          <div class="run-block">
+            <button class="run-button" id="run-simulation" type="submit">
+              <span>Run simulation</span>
+              <span aria-hidden="true">→</span>
+            </button>
+
+            <p>
+              The simulation executes locally in your browser. No vehicle input is sent anywhere.
+            </p>
+          </div>
+        </form>
+      </aside>
+
+      <section class="analysis-panel" id="results" aria-labelledby="results-title">
+        <div class="panel-heading result-heading">
+          <div>
+            <p class="panel-code">02 / OUTPUT</p>
+            <h2 id="results-title">Analysis</h2>
+          </div>
+
+          <div class="run-status" id="run-status" aria-live="polite">
+            <span class="status-dot idle"></span>
+            <strong>Ready</strong>
+          </div>
+        </div>
+
+        <section class="visualization-card" aria-labelledby="trajectory-title">
+          <div class="card-head">
+            <div>
+              <p>TRAJECTORY</p>
+              <h3 id="trajectory-title">Downrange / altitude</h3>
+            </div>
+
+            <div class="plot-legend">
+              <span><i class="legend-line"></i> Vehicle path</span>
+              <span><i class="legend-event"></i> Flight event</span>
+            </div>
+          </div>
+
+          <div class="trajectory-stage">
+            <svg id="trajectory-svg" class="plot-svg" viewBox="0 0 900 470" role="img" aria-label="Trajectory plot. Run a simulation to populate this chart."></svg>
+
+            <div class="empty-plot" id="trajectory-empty">
+              <span>NO SIMULATION DATA</span>
+              <strong>Configure the vehicle and run the model.</strong>
+            </div>
+          </div>
+
+          <dl class="live-strip" id="headline-strip">
+            <div><dt>STATUS</dt><dd id="headline-status">—</dd></div>
+            <div><dt>MAX ALT</dt><dd id="headline-altitude">—</dd></div>
+            <div><dt>MAX SPEED</dt><dd id="headline-speed">—</dd></div>
+            <div><dt>MAX-Q</dt><dd id="headline-q">—</dd></div>
+            <div><dt>FINAL MASS</dt><dd id="headline-mass">—</dd></div>
+          </dl>
+        </section>
+
+        <nav class="result-tabs" role="tablist" aria-label="Analysis result sections">
+          <button type="button" role="tab" aria-selected="true" aria-controls="overview-panel" id="overview-tab" data-result-tab="overview">Overview</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="charts-panel" id="charts-tab" data-result-tab="charts">Charts</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="stages-panel" id="stages-tab" data-result-tab="stages">Stages</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="orbit-panel" id="orbit-tab" data-result-tab="orbit">Orbit</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="events-panel" id="events-tab" data-result-tab="events">Events & warnings</button>
+        </nav>
+
+        <section class="result-panel" id="overview-panel" role="tabpanel" aria-labelledby="overview-tab">
+          <div class="metric-grid" id="metric-grid">
+            <article class="placeholder-metric"><span>MAX ALTITUDE</span><strong>—</strong></article>
+            <article class="placeholder-metric"><span>MAX SPEED</span><strong>—</strong></article>
+            <article class="placeholder-metric"><span>MAX MACH</span><strong>—</strong></article>
+            <article class="placeholder-metric"><span>MAX-Q</span><strong>—</strong></article>
+            <article class="placeholder-metric"><span>PERIAPSIS</span><strong>—</strong></article>
+            <article class="placeholder-metric"><span>APOAPSIS</span><strong>—</strong></article>
+          </div>
+
+          <div class="overview-split">
+            <article class="data-card">
+              <header>
+                <span>RESULT STATUS</span>
+                <strong id="result-classification">Awaiting simulation</strong>
+              </header>
+              <div id="result-status-detail" class="status-detail">
+                The final orbital classification will appear here.
+              </div>
+            </article>
+
+            <article class="data-card">
+              <header>
+                <span>MODEL TRACE</span>
+                <strong>Input → model → result</strong>
+              </header>
+              <ol class="trace-list" id="model-trace">
+                <li><span>01</span> Validate vehicle and model inputs</li>
+                <li><span>02</span> Propagate coupled state with event-safe integration</li>
+                <li><span>03</span> Analyze final position and velocity as an orbital state</li>
+              </ol>
+            </article>
+          </div>
+        </section>
+
+        <section class="result-panel" id="charts-panel" role="tabpanel" aria-labelledby="charts-tab" hidden>
+          <div class="chart-toolbar" id="chart-toolbar" role="group" aria-label="Select result chart">
+            <button type="button" class="active" data-chart="altitude">Altitude</button>
+            <button type="button" data-chart="speed">Speed</button>
+            <button type="button" data-chart="mach">Mach</button>
+            <button type="button" data-chart="dynamicPressure">Dynamic pressure</button>
+            <button type="button" data-chart="mass">Mass</button>
+            <button type="button" data-chart="acceleration">Acceleration</button>
+            <button type="button" data-chart="thrustToWeightRatio">TWR</button>
+            <button type="button" data-chart="thrust">Thrust</button>
+          </div>
+
+          <article class="chart-card">
+            <header>
+              <div>
+                <p id="chart-kicker">TIME HISTORY</p>
+                <h3 id="chart-title">Altitude vs time</h3>
+              </div>
+              <span id="chart-unit">km</span>
+            </header>
+
+            <svg id="chart-svg" class="plot-svg chart-svg" viewBox="0 0 900 430" role="img" aria-label="Time-history chart. Run a simulation to populate this chart."></svg>
+          </article>
+        </section>
+
+        <section class="result-panel" id="stages-panel" role="tabpanel" aria-labelledby="stages-tab" hidden>
+          <div class="table-card">
+            <div class="card-head">
+              <div>
+                <p>STAGING</p>
+                <h3>Stage-by-stage result</h3>
+              </div>
+            </div>
+
+            <div class="results-table-wrap">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Stage</th>
+                    <th scope="col">Burn time</th>
+                    <th scope="col">Usable propellant</th>
+                    <th scope="col">Consumed</th>
+                    <th scope="col">Burnout</th>
+                    <th scope="col">Separation</th>
+                  </tr>
+                </thead>
+                <tbody id="stage-results-body">
+                  <tr><td colspan="6" class="empty-cell">Run a simulation to populate stage results.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="result-panel" id="orbit-panel" role="tabpanel" aria-labelledby="orbit-tab" hidden>
+          <div class="orbit-layout">
+            <article class="orbit-primary">
+              <span>FINAL CLASSIFICATION</span>
+              <strong id="orbit-classification">—</strong>
+              <p id="orbit-target-result">No result yet.</p>
+            </article>
+
+            <dl class="orbit-grid" id="orbit-grid">
+              <div><dt>Periapsis</dt><dd>—</dd></div>
+              <div><dt>Apoapsis</dt><dd>—</dd></div>
+              <div><dt>Eccentricity</dt><dd>—</dd></div>
+              <div><dt>Semi-major axis</dt><dd>—</dd></div>
+              <div><dt>Orbital period</dt><dd>—</dd></div>
+              <div><dt>Specific energy</dt><dd>—</dd></div>
+              <div><dt>Angular momentum</dt><dd>—</dd></div>
+              <div><dt>Final speed</dt><dd>—</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="result-panel" id="events-panel" role="tabpanel" aria-labelledby="events-tab" hidden>
+          <div class="events-layout">
+            <article class="data-card">
+              <header>
+                <span>EVENT TIMELINE</span>
+                <strong>Discrete + derived events</strong>
+              </header>
+              <ol class="event-list" id="event-list">
+                <li class="empty-list">Run a simulation to populate the event timeline.</li>
+              </ol>
+            </article>
+
+            <article class="data-card">
+              <header>
+                <span>WARNINGS & ASSUMPTIONS</span>
+                <strong>Model disclosure</strong>
+              </header>
+              <ul class="warning-list" id="warning-list">
+                <li class="empty-list">Input and simulation warnings will appear here.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <div class="result-actions">
+          <button type="button" class="subtle-button" id="export-result" disabled>Export result JSON</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <template id="stage-template">
+    <fieldset class="input-group stage-group" data-stage>
+      <legend>
+        <span data-stage-code>STAGE 1</span>
+        <span data-stage-title>Stage 1</span>
+      </legend>
+
+      <label class="field">
+        <span>Stage name</span>
+        <input data-field="name" type="text" autocomplete="off">
+      </label>
+
+      <div class="subsection-label">MASS</div>
+      <div class="field-grid three">
+        <label class="field">
+          <span>Dry mass <b>kg</b></span>
+          <input data-field="dryMass" type="number" min="0.0001" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Propellant <b>kg</b></span>
+          <input data-field="propellantMass" type="number" min="0" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Residual <b>kg</b></span>
+          <input data-field="residualPropellantMass" type="number" min="0" step="any" value="0">
+        </label>
+      </div>
+
+      <div class="subsection-label">PROPULSION</div>
+      <div class="field-grid two">
+        <label class="field">
+          <span>Sea-level thrust <b>kN</b></span>
+          <input data-field="thrustSeaLevel" type="number" min="0" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Vacuum thrust <b>kN</b></span>
+          <input data-field="thrustVacuum" type="number" min="0" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Sea-level Isp <b>s</b></span>
+          <input data-field="ispSeaLevel" type="number" min="0.0001" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Vacuum Isp <b>s</b></span>
+          <input data-field="ispVacuum" type="number" min="0.0001" step="any" required>
+        </label>
+      </div>
+
+      <div class="subsection-label">GEOMETRY / EVENTS</div>
+      <div class="field-grid two">
+        <label class="field">
+          <span>Body diameter <b>m</b></span>
+          <input data-field="diameter" type="number" min="0.0001" step="any" required>
+        </label>
+
+        <label class="field">
+          <span>Separation delay <b>s</b></span>
+          <input data-field="separationDelay" type="number" min="0" step="any" value="0">
+        </label>
+      </div>
+    </fieldset>
+  </template>
+
+  <template id="table-row-template">
+    <tr>
+      <td><input type="number" step="any" data-column="x" aria-label="Coordinate value"></td>
+      <td><input type="number" step="any" data-column="y" aria-label="Model value"></td>
+      <td><button class="remove-row" type="button" aria-label="Remove row">×</button></td>
+    </tr>
+  </template>
+</body>
+</html>

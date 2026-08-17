@@ -1,0 +1,138 @@
+SERIAL-STAGING MASS & EVENT VALIDATION
+======================================
+Models under test: physics/staging.js + analyzer/simulation.js event orchestration
+Vehicle:           Example Two-Stage Vehicle
+Integrator:        classical RK4, dt=0.2 s (integrated portion)
+Purpose:           mass-ledger and discrete-event integrity
+
+ANALYTICAL MASS LEDGER
+----------------------
+Payload mass:                    5000.000 kg
+Stage 1 dry mass:                25000.000 kg
+Stage 1 usable propellant:       400000.000 kg
+Stage 2 dry mass:                4000.000 kg
+Stage 2 usable propellant:       60000.000 kg
+Initial vehicle mass:            494000.000 kg
+Stage 1 burnout mass:            94000.000 kg
+After Stage 1 separation:        69000.000 kg
+Stage 2 burnout mass:            9000.000 kg
+Final mass after Stage 2 sep.:   5000.000 kg
+
+INTEGRATED EVENT TIMELINE
+-------------------------
+t=148.774056097564 s  STAGE 1 BURNOUT
+t=150.774056097564 s  STAGE 1 SEPARATION  discarded=25000.000000 kg
+t=355.536908097549 s  STAGE 2 BURNOUT
+t=355.536908097549 s  STAGE 2 SEPARATION  discarded=4000.000000 kg
+
+CHECKS
+------
+PASS  Initial vehicle mass matches analytical stack sum
+      model=494000.000000000 kg
+      expected=494000.000000000 kg
+      tolerance=1.000000e-6 kg
+PASS  Stage 1 usable propellant bookkeeping
+      runtime=400000.000000000 kg
+      expected=400000.000000000 kg
+PASS  Stage 1 consumes exactly its usable propellant
+      consumed=400000.000000000 kg
+      expected=400000.000000000 kg
+PASS  Stage 1 is marked burned out with zero usable propellant
+      remaining=0.000000e+0 kg
+PASS  Stage 1 burnout stack mass matches analytical ledger
+      model=94000.000000000 kg
+      expected=94000.000000000 kg
+PASS  Stage 1 separation discards dry + residual mass
+      discarded=25000.000000000 kg
+      expected=25000.000000000 kg
+PASS  Stage 1 post-separation mass matches analytical ledger
+      model=69000.000000000 kg
+      expected=69000.000000000 kg
+PASS  Idealized Stage 1 separation preserves position and velocity
+      state continuity tolerance=1.000000e-12
+PASS  Stage 2 becomes active after Stage 1 separation
+      activeStageIndex=1
+PASS  Stage 2 consumes exactly its usable propellant
+      consumed=60000.000000000 kg
+      expected=60000.000000000 kg
+PASS  Stage 2 burnout stack mass matches analytical ledger
+      model=9000.000000000 kg
+      expected=9000.000000000 kg
+PASS  Stage 2 separation discards dry + residual mass
+      discarded=4000.000000000 kg
+      expected=4000.000000000 kg
+PASS  Final controlled mass equals analytical payload-only mass
+      model=5000.000000000 kg
+      expected=5000.000000000 kg
+PASS  Final controlled runtime marks all stages complete
+      allStagesComplete=true
+PASS  Residual propellant remains in burnout mass and is discarded at separation
+      usable propellant burned=9500.000000 kg (expected 9500)
+      burnout mass=1600.000000 kg (payload + dry + residual = 1600)
+      discarded mass=1500.000000 kg (dry + residual = 1500)
+      final payload mass=100.000000 kg (expected 100)
+PASS  Integrated staging event order is correct
+      observed=stageBurnout:0 -> stageSeparation:0 -> stageBurnout:1 -> stageSeparation:1
+      expected=stageBurnout:0 -> stageSeparation:0 -> stageBurnout:1 -> stageSeparation:1
+PASS  Integrated Stage 1 burnout mass matches analytical ledger
+      history mass=94000.000000000 kg
+      expected=94000.000000000 kg
+PASS  Stage 1 coast to separation consumes no additional propellant
+      burnout mass=94000.000000000 kg
+      pre-separation mass=94000.000000000 kg
+      configured coast delay=2.000 s
+PASS  Integrated Stage 2 burnout mass matches analytical ledger
+      history mass=9000.000000000 kg
+      expected=9000.000000000 kg
+PASS  Integrated Stage 1 separation delay matches configuration
+      burnout=148.774056097564 s
+      separation=150.774056097564 s
+      observed delay=2.000000000000 s
+      configured delay=2.000000000000 s
+      difference=1.136868e-13 s
+      tolerance=1.000000e-8 s
+PASS  Integrated Stage 2 separation delay matches configuration
+      burnout=355.536908097549 s
+      separation=355.536908097549 s
+      observed delay=0.000000000000 s
+      configured delay=0.000000000000 s
+      difference=0.000000e+0 s
+      tolerance=1.000000e-8 s
+PASS  Integrated separation events report correct discarded masses
+      Stage 1 event=25000.000000000 kg, expected=25000.000000000 kg
+      Stage 2 event=4000.000000000 kg, expected=4000.000000000 kg
+PASS  Integrated simulation final mass equals analytical final mass
+      model=5000.000000000 kg
+      expected=5000.000000000 kg
+      tolerance=1.000000e-6 kg
+PASS  Integrated total propellant consumption closes the mass ledger
+      initial mass=494000.000000000 kg
+      final mass=5000.000000000 kg
+      discarded dry/residual mass=29000.000000000 kg
+      inferred propellant burned=460000.000000000 kg
+      expected usable propellant=460000.000000000 kg
+PASS  Integrated final staging state marks all stages burned out and separated
+      allStagesComplete=true
+      separatedStageCount=2
+PASS  Integrated simulation terminates because all stages complete
+      terminationReason=allStagesComplete
+
+ACCEPTANCE CRITERIA
+-------------------
+Mass ledger agreement:          <= 1.000000e-6 kg absolute difference
+Configured event-delay error:   <= 1.000000e-8 s
+Separation state continuity:    <= 1.000000e-12 absolute component difference
+Event order / stage flags:      exact logical agreement
+
+These are software bookkeeping/event-integrity criteria. They do not imply that real launch-vehicle stage-separation dynamics are modeled to these tolerances.
+
+SUMMARY
+=======
+Checks passed:                   26/26
+Initial mass:                    494000.000 kg
+Total usable propellant:         460000.000 kg
+Total discarded dry/residual:   29000.000 kg
+Final mass:                      5000.000 kg
+Stage separations:               2
+Termination reason:              allStagesComplete
+Result:                          PASS

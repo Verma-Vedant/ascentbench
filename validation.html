@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Validation evidence for the Launch Vehicle Analyzer: atmosphere reference checks, orbital mechanics, RK4 conservation, timestep convergence, staging integrity, and a Falcon 9 CRS-5 public-flight benchmark.">
+  <meta name="theme-color" content="#07111b">
+  <meta property="og:title" content="Validation · Launch Vehicle Analyzer">
+  <meta property="og:description" content="Measured evidence, acceptance criteria, sources, and known model-fidelity failures for the Launch Vehicle Analyzer.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <title>Validation · Launch Vehicle Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="technical-pages.css">
+  <script src="technical-pages.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="index.html" aria-label="Launch Vehicle Analyzer home">
+      <span class="brand-short">LVA</span>
+      <span class="brand-name">Launch Vehicle Analyzer</span>
+    </a>
+    <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="primary-nav">
+      <span class="sr-only">Toggle navigation</span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+    <nav class="primary-nav" id="primary-nav" data-nav aria-label="Primary navigation">
+      <a href="index.html#system">System</a>
+      <a href="index.html#physics">Physics</a>
+      <a href="index.html#traceability">Traceability</a>
+      <a href="validation.html" class="current-page" aria-current="page">Validation</a>
+      <a href="limitations.html">Limitations</a>
+    </nav>
+    <a class="header-action" href="analyzer/analyzer.html">Open analyzer <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main" class="tech-main validation-page">
+    <section class="tech-hero validation-hero" aria-labelledby="page-title">
+      <div class="tech-hero-inner">
+        <div>
+          <p class="tech-kicker">VERIFICATION / VALIDATION REPORT</p>
+          <h1 id="page-title">Evidence, including the inconvenient parts.</h1>
+          <p class="lead">The numerical and bookkeeping tests below pass their stated criteria. The Falcon 9 CRS-5 comparison does not reproduce the published MECO state closely enough to claim vehicle-level trajectory validation. Both outcomes are shown because a validation page that hides failed fidelity is merely marketing with equations.</p>
+          <div class="tech-actions">
+            <a class="button button-primary" href="#summary">See measured results <span aria-hidden="true">↓</span></a>
+            <a class="button button-secondary" href="limitations.html">Read model limitations</a>
+          </div>
+        </div>
+        <dl class="tech-hero-meta" aria-label="Validation overview">
+          <div><dt>Formal validation suites</dt><dd>5 PASS</dd></div>
+          <div><dt>Atmosphere matrix</dt><dd>9 / 9 within 0.05%</dd></div>
+          <div><dt>Default timestep</dt><dd>0.2 s converged</dd></div>
+          <div><dt>Real-flight benchmark</dt><dd class="meta-warn">Fidelity limitation found</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <nav class="validation-jump" aria-label="Validation sections">
+      <div class="validation-jump-inner">
+        <a href="#method">Method</a>
+        <a href="#summary">Summary</a>
+        <a href="#atmosphere">Atmosphere</a>
+        <a href="#orbit">Orbit</a>
+        <a href="#energy">RK4 energy</a>
+        <a href="#convergence">Convergence</a>
+        <a href="#staging">Staging</a>
+        <a href="#falcon9">Falcon 9</a>
+      </div>
+    </nav>
+
+    <div class="tech-content">
+      <section class="tech-section" id="method" aria-labelledby="method-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">01 / METHOD</p>
+          <div>
+            <h2 id="method-title">Different claims need different evidence.</h2>
+            <p>The project separates implementation verification from real-vehicle validation. A mathematically correct integrator can still drive an inaccurate vehicle model, and a good-looking trajectory can still be produced by broken bookkeeping. Each test therefore targets a narrower claim. The complete stdout from every validation run is preserved verbatim beneath its interpreted result, so summarized numbers can be audited against the actual executable output.</p>
+          </div>
+        </div>
+        <div class="status-grid validation-method-grid">
+          <article class="status-card"><span class="code">A / REFERENCE</span><strong>Independent equations or tables</strong><p>Atmosphere and orbital-state outputs are compared with references calculated outside the implementation under test.</p><span class="status-pill status-pass">Verified</span></article>
+          <article class="status-card"><span class="code">B / NUMERICAL</span><strong>Integration behavior</strong><p>RK4 is checked for conservation in a controlled two-body problem and for full-simulation timestep convergence.</p><span class="status-pill status-pass">Verified</span></article>
+          <article class="status-card"><span class="code">C / SYSTEM</span><strong>Mass and event integrity</strong><p>Propellant depletion, burnout, separation, stage activation and final mass are checked against an analytical ledger.</p><span class="status-pill status-pass">Verified</span></article>
+          <article class="status-card status-card-warning"><span class="code">D / EMPIRICAL</span><strong>Public flight benchmark</strong><p>A Falcon 9 CRS-5 proxy is compared with NASA-published flight milestones. The MECO mismatch is treated as a limitation, not a pass.</p><span class="status-pill status-limitation">Limitation found</span></article>
+        </div>
+        <div class="claim-note">
+          <strong>Claim boundary</strong>
+          <p>Passing these checks supports correctness of the tested implementation under its stated assumptions. It does not establish operational flight accuracy, certify the generic aerodynamic model, or turn approximate Falcon 9 inputs into flight telemetry.</p>
+        </div>
+      </section>
+
+      <section class="tech-section" id="summary" aria-labelledby="summary-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">02 / RESULTS</p>
+          <div>
+            <h2 id="summary-title">Validation status at a glance.</h2>
+            <p>All values below are measured from the validation scripts included in the repository. Tolerances marked “project criterion” are acceptance thresholds chosen for implementation verification, not published uncertainty bounds.</p>
+          </div>
+        </div>
+        <div class="validation-table-wrap">
+          <table class="validation-table summary-table">
+            <thead><tr><th>Evidence</th><th>Measured result</th><th>Criterion</th><th>Interpretation</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>U.S. Standard Atmosphere matrix</td><td>Max P error 0.013345%; max ρ error 0.012264%</td><td>≤ 0.05%</td><td>9 geometric-altitude reference cases within reporting tolerance</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>200 km circular orbit</td><td>7.788487985 km/s; 5301.004602 s; e = 0</td><td>Metric-specific numerical tolerances</td><td>Analytical two-body state reproduced to floating-point scale</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>RK4 energy conservation</td><td>Max energy drift 1.473889940×10⁻¹³%</td><td>≤ 0.01%</td><td>Negligible drift over the controlled 100-step test</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>Full-simulation timestep convergence</td><td>Worst 0.2 s vs 0.05 s difference 5.689672×10⁻⁴%</td><td>≤ 0.01%</td><td>Default 0.2 s step is converged for the tested example trajectory</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>Serial staging / mass ledger</td><td>26 / 26 checks; 494,000 kg → 5,000 kg</td><td>Exact logic + numerical bookkeeping tolerances</td><td>Mass and discrete events close correctly</td><td class="cell-pass">Pass</td></tr>
+              <tr class="row-limitation"><td>Falcon 9 CRS-5 public-flight benchmark</td><td>MECO altitude error 10.87%; MECO Mach error 39.34%</td><td>Descriptive benchmark, no invented pass threshold</td><td>Current Falcon proxy is not vehicle-level trajectory validated</td><td class="cell-limitation">Limitation</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tech-section validation-detail" id="atmosphere" aria-labelledby="atmosphere-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">03 / ATMOSPHERE</p>
+          <div><h2 id="atmosphere-title">U.S. Standard Atmosphere reference matrix.</h2><p><code>physics/atmosphere.js</code> was compared against an independent U.S. Standard Atmosphere 1976 reference at nine geometric altitudes spanning sea level through the model's 86 km boundary.</p></div>
+        </div>
+
+        <div class="validation-result-head">
+          <div><span class="result-label">RESULT</span><strong class="result-pass">PASS</strong></div>
+          <div><span>Cases</span><strong>9 / 9</strong></div>
+          <div><span>Max pressure error</span><strong>0.013345%</strong></div>
+          <div><span>Max density error</span><strong>0.012264%</strong></div>
+          <div><span>Reporting tolerance</span><strong>0.05%</strong></div>
+        </div>
+
+        <div class="validation-table-wrap compact-matrix">
+          <table class="validation-table">
+            <thead><tr><th>Geometric altitude</th><th>Geopotential used</th><th>Model T</th><th>P error</th><th>ρ error</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>0 km</td><td>0.000 km</td><td>288.150 K</td><td>0.000000%</td><td>0.001070%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>5 km</td><td>4.996 km</td><td>255.676 K</td><td>0.000673%</td><td>0.000398%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>11 km</td><td>10.981 km</td><td>216.774 K</td><td>0.001601%</td><td>0.000531%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>20 km</td><td>19.937 km</td><td>216.650 K</td><td>0.003112%</td><td>0.002043%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>32 km</td><td>31.840 km</td><td>228.490 K</td><td>0.005068%</td><td>0.003998%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>47 km</td><td>46.655 km</td><td>269.684 K</td><td>0.007249%</td><td>0.006177%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>51 km</td><td>50.594 km</td><td>270.650 K</td><td>0.007781%</td><td>0.006707%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>71 km</td><td>70.216 km</td><td>216.846 K</td><td>0.010724%</td><td>0.009729%</td><td class="cell-pass">Pass</td></tr>
+              <tr><td>86 km</td><td>84.852 km</td><td>186.946 K</td><td>0.013345%</td><td>0.012264%</td><td class="cell-pass">Pass</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="explain-grid">
+          <article class="explain-card"><span>WHY THESE ALTITUDES?</span><h3>They cross every implemented lower-atmosphere region.</h3><p>The set includes sea level, major layer boundaries and high-altitude points through 86 km. It is deliberately distributed across the piecewise lapse-rate model instead of checking only the easy sea-level anchor.</p></article>
+          <article class="explain-card"><span>WHY GEOMETRIC + GEOPOTENTIAL?</span><h3>The API takes geometric altitude; the standard equations use geopotential altitude.</h3><p>The validation records both conventions so a reader can see the conversion rather than comparing an 86 km geometric input against an 86 km geopotential table row and manufacturing an error.</p></article>
+          <article class="explain-card"><span>WHY 0.05%?</span><h3>A project reporting threshold, not a USSA uncertainty claim.</h3><p>The 0.05% criterion is intentionally much tighter than differences that would indicate a wrong layer, lapse rate or unit conversion while still allowing small differences from rounded constants/reference tabulation. The measured worst error is roughly one quarter of that limit.</p></article>
+        </div>
+        <div class="source-strip"><strong>Reference</strong><a href="https://ntrs.nasa.gov/citations/19770009539" target="_blank" rel="noopener noreferrer">U.S. Standard Atmosphere, 1976 · NASA NTRS ↗</a><span class="source-code"><code>validation/atmosphere-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · Atmosphere validation</strong>
+            </span>
+            <span class="terminal-summary-meta">68 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:atmosphere</code>
+              <a href="validation/raw-output/atmosphere.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for Atmosphere validation"><code>
+U.S. STANDARD ATMOSPHERE 1976 VALIDATION
+========================================
+Input altitude convention: GEOMETRIC altitude
+Model under test: physics/atmosphere.js
+
+    0 km geometric  -&gt;  0.000 km geopotential
+Layer: Troposphere
+  Temperature  model=288.150000 K  ref=288.150000 K  error=0.000e+0%
+  Pressure     model=101325.000000000 Pa  ref=101325.000000000 Pa  error=0.000e+0%
+  Density      model=1.225012266 kg/m^3  ref=1.224999156 kg/m^3  error=0.001070%
+
+    5 km geometric  -&gt;  4.996 km geopotential
+Layer: Troposphere
+  Temperature  model=255.675543 K  ref=255.675543 K  error=7.686e-11%
+  Pressure     model=54047.922628365 Pa  ref=54048.286146300 Pa  error=0.000673%
+  Density      model=0.736431349 kg/m^3  ref=0.736428421 kg/m^3  error=0.000398%
+
+   11 km geometric  -&gt;  10.981 km geopotential
+Layer: Troposphere
+  Temperature  model=216.773513 K  ref=216.773513 K  error=2.101e-10%
+  Pressure     model=22699.597314215 Pa  ref=22699.960739200 Pa  error=0.001601%
+  Density      model=0.364799628 kg/m^3  ref=0.364801564 kg/m^3  error=0.000531%
+
+   20 km geometric  -&gt;  19.937 km geopotential
+Layer: Tropopause / Isothermal Layer
+  Temperature  model=216.650000 K  ref=216.650000 K  error=1.312e-14%
+  Pressure     model=5529.139796870 Pa  ref=5529.311892900 Pa  error=0.003112%
+  Density      model=0.088908099 kg/m^3  ref=0.088909916 kg/m^3  error=0.002043%
+
+   32 km geometric  -&gt;  31.840 km geopotential
+Layer: Lower Stratosphere
+  Temperature  model=228.489719 K  ref=228.489719 K  error=6.722e-11%
+  Pressure     model=889.019356621 Pa  ref=889.064416900 Pa  error=0.005068%
+  Density      model=0.013554609 kg/m^3  ref=0.013555151 kg/m^3  error=0.003998%
+
+   47 km geometric  -&gt;  46.655 km geopotential
+Layer: Upper Stratosphere
+  Temperature  model=269.684131 K  ref=269.684131 K  error=1.388e-10%
+  Pressure     model=115.842715569 Pa  ref=115.851114000 Pa  error=0.007249%
+  Density      model=0.001496428 kg/m^3  ref=0.001496520 kg/m^3  error=0.006177%
+
+   51 km geometric  -&gt;  50.594 km geopotential
+Layer: Stratopause / Isothermal Layer
+  Temperature  model=270.650000 K  ref=270.650000 K  error=0.000e+0%
+  Pressure     model=70.452526483 Pa  ref=70.458009000 Pa  error=0.007781%
+  Density      model=9.068406702e-4 kg/m^3  ref=9.069015000e-4 kg/m^3  error=0.006707%
+
+   71 km geometric  -&gt;  70.216 km geopotential
+Layer: Lower Mesosphere
+  Temperature  model=216.845911 K  ref=216.845911 K  error=1.086e-10%
+  Pressure     model=4.479082590 Pa  ref=4.479563000 Pa  error=0.010724%
+  Density      model=7.195819860e-5 kg/m^3  ref=7.196520000e-5 kg/m^3  error=0.009729%
+
+   86 km geometric  -&gt;  84.852 km geopotential
+Layer: Upper Mesosphere
+  Temperature  model=186.945908 K  ref=186.945908 K  error=1.008e-10%
+  Pressure     model=0.373330471 Pa  ref=0.373380300 Pa  error=0.013345%
+  Density      model=6.956966665e-6 kg/m^3  ref=6.957820000e-6 kg/m^3  error=0.012264%
+
+SUMMARY
+=======
+Cases tested: 9
+Maximum temperature error: 2.101e-10%
+Maximum pressure error:    0.013345%
+Maximum density error:     0.012264%
+Reporting tolerance:       0.05%
+Result: PASS</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section validation-detail" id="orbit" aria-labelledby="orbit-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">04 / ORBIT</p>
+          <div><h2 id="orbit-title">200 km circular-orbit analytical benchmark.</h2><p>The orbit module was given a mathematically circular planar state and compared with independently evaluated two-body equations using the same project Earth convention.</p></div>
+        </div>
+
+        <div class="validation-result-head">
+          <div><span class="result-label">RESULT</span><strong class="result-pass">PASS</strong></div>
+          <div><span>Circular speed</span><strong>7.788487985 km/s</strong></div>
+          <div><span>Period</span><strong>5301.004602 s</strong></div>
+          <div><span>Eccentricity</span><strong>0</strong></div>
+          <div><span>Periapsis / apoapsis</span><strong>200 / 200 km</strong></div>
+        </div>
+
+        <div class="equation-grid" aria-label="Circular orbit reference equations">
+          <div><span>Radius</span><code>r = Rₑ + h</code></div>
+          <div><span>Circular speed</span><code>v = √(μ / r)</code></div>
+          <div><span>Period</span><code>T = 2π√(r³ / μ)</code></div>
+          <div><span>Specific energy</span><code>ε = −μ / (2r)</code></div>
+        </div>
+
+        <div class="two-column-evidence">
+          <div class="evidence-panel">
+            <p class="eyebrow">REFERENCE CONVENTIONS</p>
+            <dl class="definition-list">
+              <div><dt>Test altitude</dt><dd>200 km</dd></div>
+              <div><dt>Earth radius</dt><dd>6,371,000 m</dd></div>
+              <div><dt>Earth μ</dt><dd>3.986004418×10¹⁴ m³/s²</dd></div>
+              <div><dt>Geometry</dt><dd>Spherical Earth, two-body planar orbit</dd></div>
+            </dl>
+            <p class="panel-note">The 200 km case is a simple low-Earth-orbit benchmark with a closed-form circular solution. It tests <em>orbit.js implementation consistency</em>, not the realism of a perfect spherical Earth at 200 km.</p>
+          </div>
+          <div class="evidence-panel">
+            <p class="eyebrow">WHY THESE CONSTANTS?</p>
+            <p>The project radius is a rounded spherical mean-Earth convention. JPL lists a mean Earth radius of about 6371.0084 km. The gravitational parameter matches the IERS two-body convention of 398600.4418 km³/s². Because the validation intentionally uses the same Earth convention as the module, it verifies the orbital equations rather than independently validating the constants themselves.</p>
+            <div class="inline-links"><a href="https://ssd.jpl.nasa.gov/planets/phys_par.html" target="_blank" rel="noopener noreferrer">JPL physical parameters ↗</a><a href="https://iers-conventions.obspm.fr/content/chapter6/icc6.pdf" target="_blank" rel="noopener noreferrer">IERS Chapter 6 ↗</a></div>
+          </div>
+        </div>
+
+        <div class="validation-table-wrap tolerance-table-wrap">
+          <table class="validation-table tolerance-table">
+            <thead><tr><th>Quantity</th><th>Tolerance</th><th>Measured error</th><th>Why this tolerance?</th></tr></thead>
+            <tbody>
+              <tr><td>Circular speed</td><td>1×10⁻⁶ m/s</td><td>0 m/s</td><td>Micro-metre-per-second numerical guardrail; not physical uncertainty.</td></tr>
+              <tr><td>Orbital period</td><td>1×10⁻⁶ s</td><td>0 s</td><td>Detects implementation disagreement while allowing floating-point arithmetic.</td></tr>
+              <tr><td>Specific energy</td><td>1×10⁻⁹% relative</td><td>1.228242×10⁻¹⁴%</td><td>Relative error avoids tying the criterion to the large absolute energy magnitude.</td></tr>
+              <tr><td>Angular momentum</td><td>1×10⁻⁹% relative</td><td>0%</td><td>Scale-independent comparison for a large-valued conserved quantity.</td></tr>
+              <tr><td>Eccentricity</td><td>1×10⁻¹⁰ absolute</td><td>0</td><td>The reference is zero, so relative error is not meaningful.</td></tr>
+              <tr><td>Semi-major axis / apses</td><td>1×10⁻³ m</td><td>≤ 9.313226×10⁻¹⁰ m</td><td>A 1 mm software tolerance is tiny at orbital scale yet comfortably above binary floating-point residue.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="source-strip"><strong>Numerical note</strong><a href="https://262.ecma-international.org/" target="_blank" rel="noopener noreferrer">ECMAScript Number uses IEEE-754 binary64 · ECMA-262 ↗</a><span class="source-code"><code>validation/orbit-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · 200 km circular-orbit validation</strong>
+            </span>
+            <span class="terminal-summary-meta">98 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:orbit</code>
+              <a href="validation/raw-output/orbit.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for 200 km circular-orbit validation"><code>200 KM CIRCULAR-ORBIT VALIDATION
+================================
+Model under test: physics/orbit.js
+Reference method: independent two-body circular-orbit equations
+Reference Earth radius: 6,371,000 m
+Reference Earth mu:     3.986004418e+14 m^3/s^2
+Test altitude:          200 km
+
+REFERENCE STATE
+---------------
+Radius:                 6571000.000 m
+Circular speed:         7788.487984973 m/s  (7.788487985 km/s)
+Orbital period:         5301.004602323 s  (88.350077 min)
+Specific energy:        -30330272.546036 J/kg
+
+MODEL OUTPUT
+------------
+Radius:                 6571000.000000 m
+Altitude:               200000.000000 m
+Speed:                  7788.487984973 m/s
+Circular speed:         7788.487984973 m/s
+Radial velocity:        0.000000e+0 m/s
+Tangential velocity:    7788.487984973 m/s
+Specific energy:        -30330272.546036 J/kg
+Angular momentum:       51178154549.258614 m^2/s
+Eccentricity:           0.000000e+0
+Semi-major axis:        6571000.000000 m
+Periapsis altitude:     200000.000000 m
+Apoapsis altitude:      200000.000000 m
+Orbital period:         5301.004602323 s
+Basic classification:   BOUND_ORBIT
+Target classification:  TARGET_ORBIT
+
+CHECKS
+------
+PASS  Circular speed
+      model=7788.487984973157
+      ref=7788.487984973157
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-6 m/s
+PASS  Orbital period
+      model=5301.004602322611
+      ref=5301.004602322611
+      error=0.000000e+0 s
+      tolerance=1.000000e-6 s
+PASS  Specific orbital energy
+      model=-30330272.546035606414
+      ref=-30330272.546035610139
+      error=1.228242e-14 % relative
+      tolerance=1.000000e-9 % relative
+PASS  Specific angular momentum
+      model=51178154549.258613586426
+      ref=51178154549.258613586426
+      error=0.000000e+0 % relative
+      tolerance=1.000000e-9 % relative
+PASS  Eccentricity
+      model=0.000000000000
+      ref=0.000000000000
+      error=0.000000e+0 absolute
+      tolerance=1.000000e-10 absolute
+PASS  Semi-major axis
+      model=6571000.000000000931
+      ref=6571000.000000000000
+      error=9.313226e-10 m
+      tolerance=1.000000e-3 m
+PASS  Periapsis altitude
+      model=200000.000000000000
+      ref=200000.000000000000
+      error=0.000000e+0 m
+      tolerance=1.000000e-3 m
+PASS  Apoapsis altitude
+      model=200000.000000000931
+      ref=200000.000000000000
+      error=9.313226e-10 m
+      tolerance=1.000000e-3 m
+PASS  Radial velocity
+      model=0.000000000000
+      ref=0.000000000000
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-9 m/s
+PASS  Tangential velocity
+      model=7788.487984973157
+      ref=7788.487984973157
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-6 m/s
+PASS  Basic classification = BOUND_ORBIT
+PASS  200 km target orbit recognized
+
+SUMMARY
+=======
+Reference circular speed: 7.788487985 km/s
+Model circular speed:     7.788487985 km/s
+Reference orbital period: 5301.004602 s
+Model orbital period:     5301.004602 s
+Eccentricity:             0.000000e+0
+Periapsis altitude:       200.000000000 km
+Apoapsis altitude:        200.000000000 km
+Result: PASS</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section validation-detail" id="energy" aria-labelledby="energy-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">05 / RK4 ENERGY</p>
+          <div><h2 id="energy-title">Conservation in an isolated two-body problem.</h2><p>The RK4 integrator was separated from thrust, drag, staging and mass flow. In ideal Newtonian two-body motion, specific mechanical energy should remain constant, so any drift is numerical rather than physical.</p></div>
+        </div>
+
+        <div class="validation-result-head">
+          <div><span class="result-label">RESULT</span><strong class="result-pass">PASS</strong></div>
+          <div><span>Step</span><strong>1 s</strong></div>
+          <div><span>Steps</span><strong>100</strong></div>
+          <div><span>Max energy drift</span><strong>1.473889940×10⁻¹³%</strong></div>
+          <div><span>Allowed</span><strong>0.01%</strong></div>
+        </div>
+
+        <div class="conservation-visual" aria-label="Selected energy drift measurements">
+          <div class="conservation-axis"><span>0 s</span><span>25 s</span><span>50 s</span><span>75 s</span><span>100 s</span></div>
+          <div class="conservation-line" aria-hidden="true"><i class="conservation-tick tick-0"></i><i class="conservation-tick tick-25"></i><i class="conservation-tick tick-50"></i><i class="conservation-tick tick-75"></i><i class="conservation-tick tick-100"></i></div>
+          <div class="conservation-values"><span>0</span><span>7.37×10⁻¹⁴%</span><span>2.46×10⁻¹⁴%</span><span>2.46×10⁻¹⁴%</span><span>2.46×10⁻¹⁴%</span></div>
+        </div>
+
+        <div class="explain-grid">
+          <article class="explain-card"><span>WHY ENERGY?</span><h3>It should be conserved by the physical test problem.</h3><p>With only conservative two-body gravity active, specific mechanical energy provides a direct diagnostic for integration error. There is no thrust or drag available to legitimately change it.</p></article>
+          <article class="explain-card"><span>WHY 1 s × 100?</span><h3>A short, deterministic implementation check.</h3><p>The test is deliberately simple enough that a broken RK4 implementation cannot hide behind staging or guidance. Longer-duration and step-size behavior is addressed separately by the convergence study.</p></article>
+          <article class="explain-card"><span>WHY 0.01%?</span><h3>A conservative software guardrail.</h3><p>The threshold was chosen to make materially drifting integration fail loudly. It is not an uncertainty claim for orbital prediction. The measured maximum drift is about 6.8×10¹⁰ times smaller than the threshold.</p></article>
+        </div>
+        <div class="metric-footnote">Secondary check: specific angular-momentum drift = <strong>1.490752177×10⁻¹⁴%</strong>. Maximum energy drift occurred at step 20, so acceptance uses the maximum over the history rather than only the conveniently small final drift.</div>
+        <div class="source-strip"><strong>Implementation</strong><span><code>physics/integrator.js</code> · classical fixed-step RK4</span><span class="source-code"><code>validation/energy-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · RK4 energy-conservation validation</strong>
+            </span>
+            <span class="terminal-summary-meta">50 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:energy</code>
+              <a href="validation/raw-output/energy.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for RK4 energy-conservation validation"><code>RK4 TWO-BODY ENERGY-CONSERVATION VALIDATION
+===========================================
+Model under test: physics/integrator.js (RK4)
+Force field: independent Newtonian two-body gravity
+Atmosphere: OFF
+Drag: OFF
+Thrust: OFF
+Mass flow: OFF
+
+Earth radius used:       6,371,000 m
+Earth mu used:           3.986004418e+14 m^3/s^2
+Initial altitude:        200 km
+Initial orbital speed:   7.788487985 km/s
+RK4 time step:           1 s
+RK4 steps:               100
+Propagation duration:    100 s
+
+ENERGY
+------
+Initial specific energy: -30330272.546035606414 J/kg
+Final specific energy:   -30330272.546035613865 J/kg
+Final difference:        -7.450580597e-9 J/kg
+Final relative drift:    2.456483233e-14 %
+Maximum relative drift:  1.473889940e-13 %
+Maximum drift at step:   20 (t=20 s)
+
+SECONDARY CONSERVATION CHECK
+----------------------------
+Initial angular momentum: 51178154549.258613586 m^2/s
+Final angular momentum:   51178154549.258605957 m^2/s
+Relative drift:           1.490752177e-14 %
+
+SELECTED HISTORY
+----------------
+Step   0  t=  0 s  energy=-30330272.546035606 J/kg  drift=0.000000e+0 %
+Step  25  t= 25 s  energy=-30330272.546035629 J/kg  drift=7.369450e-14 %
+Step  50  t= 50 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+Step  75  t= 75 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+Step 100  t=100 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+
+ACCEPTANCE CRITERION
+--------------------
+Maximum energy drift must remain &lt;= 0.01% over all 100 RK4 steps.
+This tolerance tests numerical implementation/step-size behavior; it is not a physical-accuracy uncertainty for the real Earth.
+
+SUMMARY
+=======
+Maximum energy drift:    1.473889940e-13 %
+Allowed drift:           0.01000 %
+Result:                  PASS</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section validation-detail" id="convergence" aria-labelledby="convergence-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">06 / CONVERGENCE</p>
+          <div><h2 id="convergence-title">Does the full simulation settle as the timestep shrinks?</h2><p>The same two-stage vehicle was simulated at five RK4 step sizes. Vehicle, guidance, aerodynamics, atmosphere and mission inputs were held constant; only <code>solver.dt</code> changed.</p></div>
+        </div>
+
+        <div class="validation-result-head">
+          <div><span class="result-label">RESULT</span><strong class="result-pass">PASS</strong></div>
+          <div><span>Timesteps</span><strong>1 → 0.05 s</strong></div>
+          <div><span>Project default</span><strong>0.2 s</strong></div>
+          <div><span>Fine comparison</span><strong>0.05 s</strong></div>
+          <div><span>Worst default-vs-fine</span><strong>5.689672×10⁻⁴%</strong></div>
+        </div>
+
+        <div class="validation-table-wrap compact-matrix">
+          <table class="validation-table">
+            <thead><tr><th>dt</th><th>Steps</th><th>Max altitude</th><th>Max speed</th><th>Mach @ 50 km</th><th>Max-Q</th><th>Apoapsis</th></tr></thead>
+            <tbody>
+              <tr><td>1.00 s</td><td>356</td><td>293.242437 km</td><td>10.023551042 km/s</td><td>4.2654755</td><td>40.541461 kPa</td><td>28,621.120496 km</td></tr>
+              <tr><td>0.50 s</td><td>712</td><td>293.242539 km</td><td>10.023550481 km/s</td><td>4.2654354</td><td>40.553843 kPa</td><td>28,621.099992 km</td></tr>
+              <tr class="row-default"><td>0.20 s</td><td>1,778</td><td>293.242540 km</td><td>10.023550438 km/s</td><td>4.2654275</td><td>40.553665 kPa</td><td>28,621.098118 km</td></tr>
+              <tr><td>0.10 s</td><td>3,556</td><td>293.242536 km</td><td>10.023550473 km/s</td><td>4.2654273</td><td>40.553830 kPa</td><td>28,621.099529 km</td></tr>
+              <tr class="row-reference"><td>0.05 s</td><td>7,112</td><td>293.242537 km</td><td>10.023550482 km/s</td><td>4.2654272</td><td>40.553896 kPa</td><td>28,621.099957 km</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="convergence-bars" aria-label="Default timestep relative differences versus 0.05 second run">
+          <div><span>Max altitude</span><b class="conv-bar conv-altitude"></b><em>8.89×10⁻⁷%</em></div>
+          <div><span>Max speed</span><b class="conv-bar conv-speed"></b><em>4.44×10⁻⁷%</em></div>
+          <div><span>Mach @ 50 km</span><b class="conv-bar conv-mach50"></b><em>6.93×10⁻⁶%</em></div>
+          <div><span>Max-Q</span><b class="conv-bar conv-maxq"></b><em>5.69×10⁻⁴%</em></div>
+          <div><span>Apoapsis</span><b class="conv-bar conv-apoapsis"></b><em>6.43×10⁻⁶%</em></div>
+        </div>
+
+        <div class="explain-grid">
+          <article class="explain-card"><span>WHY 0.05 s AS REFERENCE?</span><h3>It is a finer numerical comparison, not “truth.”</h3><p>The 0.05 s run is four times finer than the project default and twenty times finer than the coarsest sweep. Convergence means successive refinements settle toward similar outputs.</p></article>
+          <article class="explain-card"><span>WHY 0.01%?</span><h3>A project-level numerical convergence criterion.</h3><p>Selected continuous outputs from the 0.2 s default must remain within 0.01% of the 0.05 s run. This says timestep choice is not materially moving the tested outputs; it says nothing about real-world model accuracy.</p></article>
+          <article class="explain-card"><span>WHY MACH @ 50 KM?</span><h3>Maximum Mach is sampling-sensitive at the 86 km atmosphere boundary.</h3><p>Above 86 km the current atmosphere model intentionally uses a vacuum approximation and Mach becomes undefined. A fixed 50 km interpolation is therefore a cleaner convergence metric than whichever sample happens to be the final sub-86-km point.</p></article>
+        </div>
+        <div class="metric-footnote">Stage 1 and Stage 2 burnout times differed from the 0.05 s run by only <strong>1.48×10⁻¹¹ s</strong> and <strong>4.27×10⁻¹¹ s</strong>. Final mass remained exactly 5,000 kg and the orbit classification remained <code>BOUND_ORBIT</code>.</div>
+        <div class="source-strip"><strong>Implementation</strong><span>Same integrated vehicle; only <code>solver.dt</code> changed</span><span class="source-code"><code>validation/convergence-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · Full-simulation timestep-convergence validation</strong>
+            </span>
+            <span class="terminal-summary-meta">110 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:convergence</code>
+              <a href="validation/raw-output/convergence.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for Full-simulation timestep-convergence validation"><code>RK4 FULL-SIMULATION TIMESTEP-CONVERGENCE VALIDATION
+===================================================
+Model under test: integrated Analyzer simulation stack
+Integrator:       classical RK4
+Vehicle:          Example Two-Stage Vehicle
+Guidance:         built-in generic assumed profile
+Cd model:         built-in generic assumed Mach-Cd table
+Only quantity changed between runs: solver.dt
+
+Timesteps tested: 1, 0.5, 0.2, 0.1, 0.05 s
+Project default:  0.2 s
+Fine reference:   0.05 s
+
+RUN RESULTS
+-----------
+ dt(s)   steps    maxAlt(km)   maxSpeed(km/s)   Mach@50km   maxQ(kPa)   peri(km)      apo(km)        ecc
+  1.00     356    293.242437      10.023551042   4.2654755    40.541461   261.698795   28621.120496  0.681310386
+  0.50     712    293.242539      10.023550481   4.2654354    40.553843   261.698852   28621.099992  0.681310227
+  0.20    1778    293.242540      10.023550438   4.2654275    40.553665   261.698850   28621.098118  0.681310213
+  0.10    3556    293.242536      10.023550473   4.2654273    40.553830   261.698848   28621.099529  0.681310223
+  0.05    7112    293.242537      10.023550482   4.2654272    40.553896   261.698849   28621.099957  0.681310227
+
+STAGE BURNOUT TIMES
+-------------------
+dt=1.00 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.50 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.20 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.10 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.05 s  S1=148.774056098 s  S2=355.536908098 s
+
+MAXIMUM MACH DIAGNOSTIC (NOT AN ACCEPTANCE METRIC)
+-------------------------------------------------
+dt=1.00 s  maximum reported Mach=8.584980622
+dt=0.50 s  maximum reported Mach=8.702895014
+dt=0.20 s  maximum reported Mach=8.679156686
+dt=0.10 s  maximum reported Mach=8.702894779
+dt=0.05 s  maximum reported Mach=8.714793018
+Maximum reported Mach is intentionally excluded from PASS/FAIL because Mach becomes undefined above the 86 km atmosphere-model boundary; the last sub-86-km sample therefore shifts with timestep.
+Mach at a fixed 50 km geometric altitude is used instead.
+
+DEFAULT dt = 0.2 s VS FINE dt = 0.05 s
+---------------------------------------
+PASS  Maximum altitude
+      dt=0.2: 293242.539528143592
+      dt=0.05:293242.536922068335
+      relative difference=8.887098e-7 %
+      tolerance=0.01000 %
+PASS  Maximum speed
+      dt=0.2: 10023.550437664569
+      dt=0.05:10023.550482190221
+      relative difference=4.442104e-7 %
+      tolerance=0.01000 %
+PASS  Mach at 50 km geometric altitude
+      dt=0.2: 4.265427478088
+      dt=0.05:4.265427182516
+      relative difference=6.929494e-6 %
+      tolerance=0.01000 %
+PASS  Maximum dynamic pressure
+      dt=0.2: 40553.664829958878
+      dt=0.05:40553.895568308675
+      relative difference=5.689672e-4 %
+      tolerance=0.01000 %
+PASS  Periapsis altitude
+      dt=0.2: 261698.849793746136
+      dt=0.05:261698.849114250392
+      relative difference=2.596480e-7 %
+      tolerance=0.01000 %
+PASS  Apoapsis altitude
+      dt=0.2: 28621098.117783337831
+      dt=0.05:28621099.956778533757
+      relative difference=6.425313e-6 %
+      tolerance=0.01000 %
+PASS  Eccentricity
+      dt=0.2: 0.681310212518
+      dt=0.05:0.681310226625
+      relative difference=2.070606e-6 %
+      tolerance=0.01000 %
+PASS  Stage 1 burnout time
+      dt=0.2: 148.774056097564 s
+      dt=0.05:148.774056097549 s
+      difference=1.475087e-11 s
+      tolerance=0.200 s
+PASS  Stage 2 burnout time
+      dt=0.2: 355.536908097549 s
+      dt=0.05:355.536908097592 s
+      difference=4.274625e-11 s
+      tolerance=0.200 s
+PASS  Final mass consistency
+      dt=0.2: 5000.000000000 kg
+      dt=0.05:5000.000000000 kg
+      difference=0.000000e+0 kg
+      tolerance=1.000000e-6 kg
+PASS  Orbit classification unchanged (BOUND_ORBIT)
+PASS  Termination reason unchanged (allStagesComplete)
+
+ACCEPTANCE CRITERION
+--------------------
+For the project default dt=0.2 s, selected continuous outputs must differ by &lt;= 0.01% from the dt=0.05 s run.
+Stage-burnout times must differ by &lt;= 0.2 s, final mass must agree within 0.000001 kg, and classifications must remain unchanged.
+These are numerical-convergence criteria only. They do not measure real-world launch accuracy.
+
+SUMMARY
+=======
+Default timestep:                   0.2 s
+Fine comparison timestep:           0.05 s
+Worst default-vs-fine difference:   5.689672e-4 % (Maximum dynamic pressure)
+Allowed continuous difference:      0.01000 %
+Default integration steps:          1778
+Fine integration steps:             7112
+Result:                             PASS</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section validation-detail" id="staging" aria-labelledby="staging-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">07 / STAGING</p>
+          <div><h2 id="staging-title">Mass accounting and discrete-event integrity.</h2><p>The staging implementation is checked twice: first against a controlled analytical ledger, then through the complete Analyzer event sequence. This prevents two compensating bookkeeping mistakes from receiving a ceremonial green check.</p></div>
+        </div>
+
+        <div class="validation-result-head">
+          <div><span class="result-label">RESULT</span><strong class="result-pass">PASS</strong></div>
+          <div><span>Checks</span><strong>26 / 26</strong></div>
+          <div><span>Initial mass</span><strong>494,000 kg</strong></div>
+          <div><span>Usable propellant</span><strong>460,000 kg</strong></div>
+          <div><span>Final mass</span><strong>5,000 kg</strong></div>
+        </div>
+
+        <div class="mass-ledger" aria-label="Analytical vehicle mass ledger">
+          <div class="mass-step"><span>INITIAL STACK</span><strong>494,000 kg</strong><small>Payload + both stages</small></div>
+          <div class="mass-arrow"><span>−400,000 kg</span><small>Stage 1 usable propellant</small></div>
+          <div class="mass-step"><span>S1 BURNOUT</span><strong>94,000 kg</strong><small>t = 148.774056 s</small></div>
+          <div class="mass-arrow"><span>−25,000 kg</span><small>Stage 1 separation</small></div>
+          <div class="mass-step"><span>POST-S1</span><strong>69,000 kg</strong><small>t = 150.774056 s</small></div>
+          <div class="mass-arrow"><span>−60,000 kg</span><small>Stage 2 usable propellant</small></div>
+          <div class="mass-step"><span>S2 BURNOUT</span><strong>9,000 kg</strong><small>t = 355.536908 s</small></div>
+          <div class="mass-arrow"><span>−4,000 kg</span><small>Stage 2 separation</small></div>
+          <div class="mass-step mass-final"><span>PAYLOAD</span><strong>5,000 kg</strong><small>allStagesComplete</small></div>
+        </div>
+
+        <div class="two-column-evidence">
+          <div class="evidence-panel"><p class="eyebrow">EVENT CHECKS</p><ul class="check-list"><li>Stage 1 burnout → separation → Stage 2 burnout → separation</li><li>Configured 2 s Stage 1 coast delay reproduced</li><li>Zero-second Stage 2 delay reproduced</li><li>Stage activation flags and final completion state agree</li><li>Idealized separation preserves position and velocity</li></ul></div>
+          <div class="evidence-panel"><p class="eyebrow">EDGE CASE</p><h3>Residual propellant was tested separately.</h3><p>A synthetic stage with 500 kg residual propellant verified that only usable propellant is burned; dry mass plus residual remains at burnout and is discarded together at separation.</p><p class="panel-note">The tiny mass/time tolerances are software-integrity thresholds. They do not imply milligram knowledge of a real launch vehicle or nanosecond-accurate physical separation.</p></div>
+        </div>
+
+        <div class="validation-table-wrap tolerance-table-wrap">
+          <table class="validation-table tolerance-table">
+            <thead><tr><th>Check type</th><th>Acceptance</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>Mass ledger</td><td>≤ 1×10⁻⁶ kg absolute</td><td>Allows floating-point residue while making bookkeeping loss/gain fail immediately.</td></tr>
+              <tr><td>Configured event delay</td><td>≤ 1×10⁻⁸ s</td><td>Verifies event scheduling, not real separation timing uncertainty.</td></tr>
+              <tr><td>Separation state continuity</td><td>≤ 1×10⁻¹² per component</td><td>Tests the current idealization that separation changes mass/configuration only.</td></tr>
+              <tr><td>Order / flags</td><td>Exact logical agreement</td><td>Discrete state transitions have no meaningful “almost correct” interpretation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="source-strip"><strong>Implementation</strong><span><code>physics/staging.js</code> + <code>analyzer/simulation.js</code></span><span class="source-code"><code>validation/staging-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · Serial-staging mass &amp; event validation</strong>
+            </span>
+            <span class="terminal-summary-meta">138 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:staging</code>
+              <a href="validation/raw-output/staging.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for Serial-staging mass &amp; event validation"><code>SERIAL-STAGING MASS &amp; EVENT VALIDATION
+======================================
+Models under test: physics/staging.js + analyzer/simulation.js event orchestration
+Vehicle:           Example Two-Stage Vehicle
+Integrator:        classical RK4, dt=0.2 s (integrated portion)
+Purpose:           mass-ledger and discrete-event integrity
+
+ANALYTICAL MASS LEDGER
+----------------------
+Payload mass:                    5000.000 kg
+Stage 1 dry mass:                25000.000 kg
+Stage 1 usable propellant:       400000.000 kg
+Stage 2 dry mass:                4000.000 kg
+Stage 2 usable propellant:       60000.000 kg
+Initial vehicle mass:            494000.000 kg
+Stage 1 burnout mass:            94000.000 kg
+After Stage 1 separation:        69000.000 kg
+Stage 2 burnout mass:            9000.000 kg
+Final mass after Stage 2 sep.:   5000.000 kg
+
+INTEGRATED EVENT TIMELINE
+-------------------------
+t=148.774056097564 s  STAGE 1 BURNOUT
+t=150.774056097564 s  STAGE 1 SEPARATION  discarded=25000.000000 kg
+t=355.536908097549 s  STAGE 2 BURNOUT
+t=355.536908097549 s  STAGE 2 SEPARATION  discarded=4000.000000 kg
+
+CHECKS
+------
+PASS  Initial vehicle mass matches analytical stack sum
+      model=494000.000000000 kg
+      expected=494000.000000000 kg
+      tolerance=1.000000e-6 kg
+PASS  Stage 1 usable propellant bookkeeping
+      runtime=400000.000000000 kg
+      expected=400000.000000000 kg
+PASS  Stage 1 consumes exactly its usable propellant
+      consumed=400000.000000000 kg
+      expected=400000.000000000 kg
+PASS  Stage 1 is marked burned out with zero usable propellant
+      remaining=0.000000e+0 kg
+PASS  Stage 1 burnout stack mass matches analytical ledger
+      model=94000.000000000 kg
+      expected=94000.000000000 kg
+PASS  Stage 1 separation discards dry + residual mass
+      discarded=25000.000000000 kg
+      expected=25000.000000000 kg
+PASS  Stage 1 post-separation mass matches analytical ledger
+      model=69000.000000000 kg
+      expected=69000.000000000 kg
+PASS  Idealized Stage 1 separation preserves position and velocity
+      state continuity tolerance=1.000000e-12
+PASS  Stage 2 becomes active after Stage 1 separation
+      activeStageIndex=1
+PASS  Stage 2 consumes exactly its usable propellant
+      consumed=60000.000000000 kg
+      expected=60000.000000000 kg
+PASS  Stage 2 burnout stack mass matches analytical ledger
+      model=9000.000000000 kg
+      expected=9000.000000000 kg
+PASS  Stage 2 separation discards dry + residual mass
+      discarded=4000.000000000 kg
+      expected=4000.000000000 kg
+PASS  Final controlled mass equals analytical payload-only mass
+      model=5000.000000000 kg
+      expected=5000.000000000 kg
+PASS  Final controlled runtime marks all stages complete
+      allStagesComplete=true
+PASS  Residual propellant remains in burnout mass and is discarded at separation
+      usable propellant burned=9500.000000 kg (expected 9500)
+      burnout mass=1600.000000 kg (payload + dry + residual = 1600)
+      discarded mass=1500.000000 kg (dry + residual = 1500)
+      final payload mass=100.000000 kg (expected 100)
+PASS  Integrated staging event order is correct
+      observed=stageBurnout:0 -&gt; stageSeparation:0 -&gt; stageBurnout:1 -&gt; stageSeparation:1
+      expected=stageBurnout:0 -&gt; stageSeparation:0 -&gt; stageBurnout:1 -&gt; stageSeparation:1
+PASS  Integrated Stage 1 burnout mass matches analytical ledger
+      history mass=94000.000000000 kg
+      expected=94000.000000000 kg
+PASS  Stage 1 coast to separation consumes no additional propellant
+      burnout mass=94000.000000000 kg
+      pre-separation mass=94000.000000000 kg
+      configured coast delay=2.000 s
+PASS  Integrated Stage 2 burnout mass matches analytical ledger
+      history mass=9000.000000000 kg
+      expected=9000.000000000 kg
+PASS  Integrated Stage 1 separation delay matches configuration
+      burnout=148.774056097564 s
+      separation=150.774056097564 s
+      observed delay=2.000000000000 s
+      configured delay=2.000000000000 s
+      difference=1.136868e-13 s
+      tolerance=1.000000e-8 s
+PASS  Integrated Stage 2 separation delay matches configuration
+      burnout=355.536908097549 s
+      separation=355.536908097549 s
+      observed delay=0.000000000000 s
+      configured delay=0.000000000000 s
+      difference=0.000000e+0 s
+      tolerance=1.000000e-8 s
+PASS  Integrated separation events report correct discarded masses
+      Stage 1 event=25000.000000000 kg, expected=25000.000000000 kg
+      Stage 2 event=4000.000000000 kg, expected=4000.000000000 kg
+PASS  Integrated simulation final mass equals analytical final mass
+      model=5000.000000000 kg
+      expected=5000.000000000 kg
+      tolerance=1.000000e-6 kg
+PASS  Integrated total propellant consumption closes the mass ledger
+      initial mass=494000.000000000 kg
+      final mass=5000.000000000 kg
+      discarded dry/residual mass=29000.000000000 kg
+      inferred propellant burned=460000.000000000 kg
+      expected usable propellant=460000.000000000 kg
+PASS  Integrated final staging state marks all stages burned out and separated
+      allStagesComplete=true
+      separatedStageCount=2
+PASS  Integrated simulation terminates because all stages complete
+      terminationReason=allStagesComplete
+
+ACCEPTANCE CRITERIA
+-------------------
+Mass ledger agreement:          &lt;= 1.000000e-6 kg absolute difference
+Configured event-delay error:   &lt;= 1.000000e-8 s
+Separation state continuity:    &lt;= 1.000000e-12 absolute component difference
+Event order / stage flags:      exact logical agreement
+
+These are software bookkeeping/event-integrity criteria. They do not imply that real launch-vehicle stage-separation dynamics are modeled to these tolerances.
+
+SUMMARY
+=======
+Checks passed:                   26/26
+Initial mass:                    494000.000 kg
+Total usable propellant:         460000.000 kg
+Total discarded dry/residual:   29000.000 kg
+Final mass:                      5000.000 kg
+Stage separations:               2
+Termination reason:              allStagesComplete
+Result:                          PASS</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section validation-detail falcon-section" id="falcon9" aria-labelledby="falcon-title">
+        <div class="tech-section-head">
+          <p class="tech-section-number">08 / REAL FLIGHT</p>
+          <div><h2 id="falcon-title">Falcon 9 CRS-5 public-flight benchmark.</h2><p>This is the most important non-green result on the page. An approximate Falcon 9 v1.1 first-stage proxy is compared with rounded milestones published in NASA's CRS-5 mission press kit. It is a benchmark of the current model's vehicle fidelity, not a claim that the proxy reconstructs SpaceX telemetry.</p></div>
+        </div>
+
+        <div class="limitation-banner">
+          <div><span>BENCHMARK STATUS</span><strong>MODEL FIDELITY LIMITATION IDENTIFIED</strong></div>
+          <p>The proxy is close to the published early supersonic timing, but it is substantially low in altitude and especially Mach by the published MECO time. A 39.34% Mach disagreement is too large to describe as successful Falcon 9 trajectory validation.</p>
+        </div>
+
+        <div class="falcon-metrics">
+          <article class="falcon-metric metric-good"><span>Mach-1 timing</span><strong>0.878895%</strong><p>LVA 69.384774 s<br>NASA ≈ 70 s</p><em>Close cross-check, not proof</em></article>
+          <article class="falcon-metric metric-warn"><span>MECO altitude</span><strong>10.868338%</strong><p>LVA 71.305329 km<br>NASA ≈ 80 km</p><em>Substantial disagreement</em></article>
+          <article class="falcon-metric metric-bad"><span>MECO Mach</span><strong>39.343261%</strong><p>LVA 6.065674<br>NASA ≈ 10</p><em>Major fidelity failure</em></article>
+        </div>
+
+        <div class="falcon-analysis">
+          <article class="analysis-card">
+            <div class="analysis-number">01</div>
+            <div><p class="eyebrow">EARLY ASCENT</p><h3>Why is Mach-1 timing so close?</h3><p>The proxy's approximate thrust-to-mass ratio, atmosphere and generic drag produce an early acceleration history that crosses Mach 1 near the rounded NASA timing. That is encouraging, but the reference itself is approximate and several imperfect assumptions can cancel. It should therefore be treated as a cross-check, not precise Falcon 9 validation.</p></div>
+          </article>
+          <article class="analysis-card">
+            <div class="analysis-number">02</div>
+            <div><p class="eyebrow">MECO ALTITUDE</p><h3>Why is the trajectory about 8.7 km low?</h3><p>The altitude disagreement accumulates over the full first-stage ascent. The proxy does not contain CRS-5's exact mass loading, pitch program, throttle history or Falcon-specific aerodynamic coefficients. Those assumptions control how thrust is divided between vertical and horizontal acceleration and how the vehicle's acceleration changes as propellant is consumed.</p><p>Missing Earth rotation and launch-site geometry also change the inertial state, while the simplified propulsion model interpolates between thrust anchors rather than reproducing actual Merlin flight performance. The result is therefore best interpreted as a coupled vehicle-model fidelity error, not a single atmosphere or RK4 failure.</p></div>
+          </article>
+          <article class="analysis-card analysis-critical">
+            <div class="analysis-number">03</div>
+            <div><p class="eyebrow">MECO MACH</p><h3>Why is a 39.34% Mach error especially serious?</h3><p>At 157 s the simulator reports only 1.787 km/s and Mach 6.066, while the NASA press kit describes the real vehicle as approximately Mach 10. The simulated vehicle is also lower, so its local speed of sound is different, but that atmospheric difference is not remotely large enough to turn Mach 6.1 into Mach 10.</p><p>The dominant signal is therefore that the proxy has accumulated too little vehicle speed by MECO. Likely contributors are the approximate mass state, assumed specific impulse and mass-flow history, simplified thrust evolution, generic guidance and generic aerodynamics. Because these effects interact, the benchmark does not assign fabricated percentages of the error to individual causes.</p></div>
+          </article>
+          <article class="analysis-card">
+            <div class="analysis-number">04</div>
+            <div><p class="eyebrow">ERROR GROWTH</p><h3>Why can early agreement coexist with late disagreement?</h3><p>Trajectory error is cumulative. Small differences in mass, thrust, drag or thrust direction alter acceleration; that changes position and velocity; those changed states then alter the next timestep's gravity, atmosphere, drag and guidance conditions. Reasonable agreement at 70 s therefore does not guarantee agreement at 157 s.</p></div>
+          </article>
+        </div>
+
+        <div class="error-types">
+          <div><span>A</span><strong>Numerical error</strong><p>RK4 discretization / timestep effects. Independently tested above and tiny for the example convergence case.</p></div>
+          <div><span>B</span><strong>Physics-model approximation</strong><p>2D motion, generic Cd, simplified propulsion, assumed guidance and omitted rotation effects.</p></div>
+          <div><span>C</span><strong>Vehicle-data uncertainty</strong><p>Approximate Falcon masses, Isp, mission loading, throttle schedule and inaccessible flight-specific data.</p></div>
+        </div>
+
+        <div class="two-column-evidence falcon-sources">
+          <div class="evidence-panel">
+            <p class="eyebrow">PUBLISHED FLIGHT REFERENCES</p>
+            <dl class="definition-list">
+              <div><dt>Supersonic</dt><dd>≈ 70 s</dd></div>
+              <div><dt>MECO</dt><dd>≈ 157 s</dd></div>
+              <div><dt>MECO altitude</dt><dd>≈ 80 km</dd></div>
+              <div><dt>MECO Mach</dt><dd>≈ Mach 10</dd></div>
+            </dl>
+            <p class="panel-note">The NASA press kit reports Mach, not an explicit MECO velocity. The benchmark therefore compares Mach directly instead of inventing a “NASA velocity” using an arbitrary speed-of-sound convention.</p>
+            <a class="text-link" href="https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf" target="_blank" rel="noopener noreferrer">NASA SpaceX CRS-5 mission press kit ↗</a>
+          </div>
+          <div class="evidence-panel">
+            <p class="eyebrow">PROXY INPUT BOUNDARY</p>
+            <dl class="definition-list">
+              <div><dt>Sourced anchors</dt><dd>Approx. gross liftoff weight, 12 ft diameter, Merlin thrust anchors</dd></div>
+              <div><dt>Model assumptions</dt><dd>400,000 kg aggregate usable propellant, 282/311 s Isp, generic Cd, generic open-loop guidance, 100% throttle</dd></div>
+            </dl>
+            <p class="panel-note">These assumptions are intentionally separated from sourced values. Public version-level documents are not sufficient to reconstruct an exact CRS-5 stage mass and flight-control history.</p>
+            <a class="text-link" href="https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf" target="_blank" rel="noopener noreferrer">FAA Falcon Program environmental assessment ↗</a>
+          </div>
+        </div>
+
+        <div class="claim-boundary">
+          <div><h3>Supported by this benchmark</h3><ul><li>The current proxy crosses Mach 1 near the rounded CRS-5 reference.</li><li>At 157 s it is materially low in altitude and very low in Mach.</li><li>The present Falcon proxy should not be described as vehicle-level trajectory validated.</li></ul></div>
+          <div><h3>Not supported by this benchmark</h3><ul><li>Assigning an exact fraction of the 39.34% mismatch to guidance, drag, mass, Isp or any single cause.</li><li>Claiming the atmosphere, RK4 or staging model is wrong solely because the Falcon proxy disagrees.</li><li>Treating rounded press-kit milestones as precision telemetry.</li></ul></div>
+        </div>
+        <div class="source-strip source-strip-warning"><strong>Benchmark code</strong><span>No PASS/FAIL threshold is invented for the real-flight comparison.</span><span class="source-code"><code>validation/falcon9-validation.js</code> · source repository</span></div>
+      
+        <details class="terminal-evidence" data-terminal-log>
+          <summary>
+            <span>
+              <small>RAW EXECUTION EVIDENCE</small>
+              <strong>View full terminal output · Falcon 9 CRS-5 public-flight benchmark</strong>
+            </span>
+            <span class="terminal-summary-meta">251 lines <b aria-hidden="true">+</b></span>
+          </summary>
+          <div class="terminal-evidence-body">
+            <div class="terminal-toolbar">
+              <code>npm run validate:falcon9</code>
+              <a href="validation/raw-output/falcon9.txt" target="_blank" rel="noopener noreferrer">Open raw .txt ↗</a>
+            </div>
+            <pre tabindex="0" aria-label="Full terminal output for Falcon 9 CRS-5 public-flight benchmark"><code>FALCON 9 CRS-5 PUBLIC-FLIGHT BENCHMARK + ERROR DIAGNOSIS
+========================================================
+Mission:           SpaceX CRS-5
+Vehicle version:   Falcon 9 v1.1
+Benchmark type:    approximate aggregate first-stage-ascent proxy
+Result semantics:  descriptive comparison + sensitivity diagnosis; NOT formal pass/fail
+
+PRIMARY SOURCES
+---------------
+SpaceX CRS-5 Mission Press Kit (NASA)
+https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  Mission-contemporaneous source for ~70 s supersonic time, ~157 s MECO, 80 km / Mach 10 at MECO, Falcon 9 diameter, Merlin 1D thrust, and the statement that first-stage engines are gradually throttled near the end of first-stage flight.
+
+Environmental Assessment for SpaceX Falcon Launches at KSC and CCAFS (FAA)
+https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+  Later FAA summary source. It describes Falcon 9 v1.1 as ~1,100,000 lb gross lift-off weight, lists version-level propellant/thrust data, notes that propellant quantities vary with mission parameters, and states that Falcon trajectories are mission-specific.
+
+NASA GSFC educational orbital-mechanics reference
+https://pwg.gsfc.nasa.gov/Education/JAS1.htm
+  Provides the useful reference that a due-east launch from Cape Canaveral near 28.5 deg N receives about 407 m/s of eastward inertial velocity from Earth&#x27;s rotation. CRS-5 was not a simple due-east 2D launch, so 407 m/s is used only for a diagnostic sensitivity case.
+
+U.S. Standard Atmosphere, 1976 (NASA NTRS)
+https://ntrs.nasa.gov/citations/19770009539
+  Reference family for the lower-atmosphere convention. LVA&#x27;s atmosphere implementation is validated separately; here it is used only for a derived Mach/speed-of-sound diagnostic.
+
+PUBLISHED FLIGHT REFERENCES
+---------------------------
+Supersonic time:
+  value:    70
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 reaches supersonic speed one minute and ten seconds after liftoff.
+  precision:This is a rounded narrative flight anchor, not high-rate telemetry with a stated uncertainty.
+MECO time:
+  value:    157
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states first-stage MECO occurs approximately 157 seconds into flight.
+  precision:The source explicitly says approximately; the benchmark therefore must not treat 157.000000 s as an exact telemetry truth.
+MECO altitude:
+  value:    80000
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 is 80 km high at MECO.
+  precision:The press kit reports 80 km as a rounded narrative value and does not provide an uncertainty interval.
+MECO Mach:
+  value:    10
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 is traveling at 10 times the speed of sound at MECO.
+  precision:Mach 10 is rounded and the source does not specify a local speed-of-sound convention or an explicit m/s velocity.
+
+PUBLISHED VEHICLE ANCHORS USED BY BASELINE
+------------------------------------------
+Approximate gross liftoff mass:
+  value:    approximately 1,100,000 lb
+  source:   https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+  location: Section 1.2.2, p. 23
+  note:     FAA describes Falcon 9 v1.1 gross lift-off weight as approximately 1.1 million pounds. This rounded value is used only as an aggregate initial-mass anchor.
+Diameter:
+  value:    12 ft
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit gives Falcon 9 diameter as 12 ft.
+First-stage sea-level thrust:
+  value:    9 engines x 654 kN each (147,000 lbf each)
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit states one Merlin 1D produces 654 kN at liftoff. This mission-contemporaneous source is preferred over later version-summary values.
+First-stage high-altitude/vacuum thrust anchor:
+  value:    9 engines x 716 kN each (161,000 lbf each)
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit states one Merlin 1D rises to 716 kN as it climbs out of the atmosphere.
+
+PUBLIC-SOURCE CONSISTENCY WARNINGS
+----------------------------------
+FAA rounded v1.1 gross lift-off weight:  1,100,000 lb
+FAA v1.1 version-table total propellant: 1,120,925 lbm
+Propellant minus rounded gross value:    20,925 lb
+Interpretation: these aggregate public figures cannot be combined as an exact CRS-5 mass ledger. The FAA itself notes that propellant quantities vary by mission parameters; the gross value is explicitly approximate.
+Source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+NASA CRS-5 per-engine liftoff thrust: 147,000 lbf (654 kN)
+Later FAA v1.1 summary thrust:        170,000 lbf per engine
+Difference between public version summaries: 15.646 %
+Interpretation: vehicle-version/public-summary values changed across documents. The benchmark therefore uses the mission-contemporaneous CRS-5 NASA thrust anchor rather than mixing later values into the baseline.
+NASA source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+FAA source:  https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+UNSOURCED / EXPLICIT MODELING ASSUMPTIONS
+-----------------------------------------
+Aggregate usable propellant reservoir: 400,000 kg
+Isp sea level / vacuum:                282 s / 311 s
+Aerodynamics:                          generic assumed Mach-Cd table
+Guidance:                              built-in generic open-loop profile
+Throttle:                              constant 100% in baseline
+Earth rotation / launch latitude:      not modeled in baseline 2D ascent stack
+
+BASELINE STATE AT NASA-PUBLISHED MECO TIME
+------------------------------------------
+Evaluation time:      157.000 s (imposed from rounded reference; not a model-predicted MECO time)
+Model altitude:       71.305329 km
+NASA altitude:        80.000 km (rounded narrative anchor)
+Altitude difference:  -8.694671 km
+Nominal percent diff: 10.868338 %
+
+Model Mach:           6.065673929
+NASA Mach:            10.000 (rounded narrative anchor)
+Mach difference:      -3.934326071
+Nominal percent diff: 39.343261 %
+
+Model inertial speed: 1.787140068 km/s
+NASA explicit speed:  not provided in the press kit
+
+EARLY-ASCENT CROSS-CHECK
+------------------------
+Model Mach-1 crossing: 69.384774 s
+NASA supersonic time:  ~70 s (rounded narrative anchor)
+Timing difference:     -0.615226 s
+Nominal percent diff:  0.878895 %
+
+CONTROLLED ONE-AT-A-TIME SENSITIVITY RUNS
+-----------------------------------------
+These are DIAGNOSTIC perturbations, not claimed Falcon 9 uncertainties and not fitted parameters.
+Mass/thrust/Isp: +/-5%; Cd: +/-25%; guidance: deliberately steeper/shallower assumed pitch programs.
+The throttle-down and Cape-rotation cases are directionality tests, not CRS-5 reconstructions.
+
+case                              alt(km)   dAlt(km)   speed(km/s) dSpeed    Mach       dMach      Mach1(s)   dMach1(s)
+------------------------------------------------------------------------------------------------------------------
+BASELINE                            71.305      0.000     1.787140 0.000000   6.065674   0.000000     69.385       0.000
+Cd -25%                             71.525     +0.220     1.790715 +0.003575   6.086287  +0.020613     69.245      -0.140
+Cd +25%                             71.087     -0.219     1.783566 -0.003574   6.045169  -0.020505     69.525      +0.140
+Initial mass -5%                    82.254    +10.948     2.132353 +0.345213   7.632070  +1.566396     62.052      -7.333
+Initial mass +5%                    61.203    -10.103     1.497168 -0.289972   4.783932  -1.281742     77.507      +8.122
+Isp -5%                             74.784     +3.479     1.936489 +0.149349   6.684750  +0.619076     68.164      -1.221
+Isp +5%                             68.333     -2.973     1.667149 -0.119991   5.554676  -0.510998     70.539      +1.154
+Thrust -5%                          60.649    -10.656     1.482536 -0.304604   4.722468  -1.343206     77.988      +8.603
+Thrust +5%                          81.757    +10.452     2.115151 +0.328011   7.551702  +1.486028     62.358      -7.026
+More-vertical guidance              77.380     +6.075     1.731530 -0.055610   6.051137  -0.014537     69.383      -0.002
+More-horizontal guidance            63.382     -7.923     1.905721 +0.118581   6.165573  +0.099899     68.631      -0.754
+Approx. co-rotating Cape initial state   71.673     +0.367     2.122628 +0.335488   6.080098  +0.014424     69.337      -0.048
+Illustrative late throttle-down     70.635     -0.671     1.637186 -0.149954   5.533243  -0.532431     69.385      +0.000
+
+ERROR DIAGNOSIS A — MACH-1 CROSSING (~70 s)
+--------------------------------------------
+Observed nominal discrepancy: -0.615226 s (0.879 %).
+Reference limitation: NASA gives a rounded narrative time (&#x27;one minute and ten seconds&#x27;), not a telemetry uncertainty interval.
+Source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+
+Sensitivity to +/-5% initial mass: -7.333 s / +8.122 s
+Sensitivity to +/-5% thrust:       +8.603 s / -7.026 s
+Sensitivity to +/-5% Isp:          -1.221 s / +1.154 s
+Sensitivity to +/-25% Cd:          -0.140 s / +0.140 s
+Conclusion: the 0.615 s agreement is smaller than the response to several plausible diagnostic perturbations. It is encouraging, but it cannot by itself validate the Falcon-specific mass/thrust/aero model; compensating errors can produce a close Mach-1 time.
+
+ERROR DIAGNOSIS B — ALTITUDE AT 157 s
+-------------------------------------
+Observed nominal discrepancy: -8.694671 km (model low by 10.868 % relative to the rounded 80 km anchor).
+
+High-sensitivity inputs in this proxy:
+  Initial mass -5% / +5% -&gt; altitude shift +10.948 / -10.103 km.
+  Thrust -5% / +5%       -&gt; altitude shift -10.656 / +10.452 km.
+  These perturbations are not uncertainty claims, but they show that thrust-to-mass ratio is a dominant numerical lever. Public CRS-5 mass information is only approximate, and public version summaries are not internally precise enough to reconstruct the exact flight mass state.
+  FAA source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+Material guidance sensitivity:
+  More-vertical assumed profile   -&gt; altitude shift +6.075 km.
+  More-horizontal assumed profile -&gt; altitude shift -7.923 km.
+  FAA states Falcon trajectories are mission-specific; the public sources used here do not provide the CRS-5 pitch program. Guidance therefore materially affects altitude allocation and is a major unclosed fidelity term.
+  FAA source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+Moderate mass-flow sensitivity:
+  Isp -5% / +5% -&gt; altitude shift +3.479 / -2.973 km.
+  Baseline Isp is an explicit assumption. Because LVA derives mass flow from thrust/(Isp*g0), Isp changes the vehicle mass history and therefore acceleration.
+
+Low sensitivity in this experiment:
+  Cd -25% / +25% -&gt; altitude shift +0.220 / -0.219 km.
+  Approximate Cape co-rotation -&gt; altitude shift +0.367 km.
+  Therefore, within these perturbations, neither the generic Cd curve nor omitted rotation is large enough by itself to explain the ~8.7 km altitude shortfall.
+
+Wrong-direction / masking effect:
+  Illustrative late throttle-down -&gt; altitude shift -0.671 km.
+  NASA states the real first-stage engines were gradually throttled near the end of first-stage flight. The baseline incorrectly stays at 100%; adding an illustrative throttle-down reduces altitude further. Therefore missing throttle-down does NOT explain why baseline altitude is too low; constant full throttle actually biases the proxy slightly toward the reference and masks some discrepancy.
+  NASA source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+
+ERROR DIAGNOSIS C — MACH AT 157 s
+---------------------------------
+Observed nominal discrepancy: model Mach 6.066 vs rounded NASA Mach 10 (39.343 % nominal difference).
+
+First separate vehicle-speed error from local speed-of-sound error:
+  LVA speed of sound at model altitude (71.305 km): 294.632 m/s.
+  LVA/USSA speed of sound at reference altitude (80 km):             282.537 m/s.
+  Holding MODEL speed fixed but evaluating at 80 km gives Mach:       6.325.
+  Original model Mach:                                                 6.066.
+  Altitude/acoustic shift therefore changes Mach by only:              0.260.
+  That is about 6.6 % of the total Mach gap under the LVA atmosphere convention.
+  Conclusion: most of the Mach discrepancy is a vehicle-speed/trajectory discrepancy, not an atmosphere speed-of-sound discrepancy.
+  Atmosphere reference family: https://ntrs.nasa.gov/citations/19770009539
+
+Derived diagnostic only (NOT a NASA-reported velocity):
+  Mach 10 at LVA&#x27;s validated 80 km standard-atmosphere sound speed would correspond to ~2.825 km/s.
+  Baseline model speed is 1.787 km/s, a derived gap of -1.038 km/s.
+
+High-sensitivity inputs for Mach/speed in this proxy:
+  Initial mass -5% / +5% -&gt; Mach shift +1.566 / -1.282.
+  Thrust -5% / +5%       -&gt; Mach shift -1.343 / +1.486.
+  This again identifies the exact thrust-to-mass history as a dominant unresolved proxy input. The public mass anchor is approximate, and public Falcon version thrust summaries differ across documents.
+
+Moderate sensitivity:
+  Isp -5% / +5% -&gt; Mach shift +0.619 / -0.511.
+  Isp is unsourced in the benchmark and directly controls modeled mass flow, so it is a material source of speed uncertainty.
+
+Smaller sensitivity for the tested perturbations:
+  More-vertical / horizontal guidance -&gt; Mach shift -0.015 / +0.100.
+  Cd -25% / +25%                  -&gt; Mach shift +0.021 / -0.021.
+  Approximate Cape co-rotation     -&gt; Mach shift +0.014.
+  Guidance strongly moves altitude but only modestly changes Mach in these two diagnostic profiles; Cd and co-rotation are much too small here to explain a 3.93-Mach shortfall alone.
+
+Wrong-direction / masking effect:
+  Illustrative late throttle-down -&gt; Mach shift -0.532.
+  Since the real vehicle throttled down near the end of first-stage flight, the baseline&#x27;s constant 100% throttle should overstate late powered acceleration relative to a throttled case. It therefore cannot explain the low Mach; it partially hides the discrepancy.
+
+Coupled-model conclusion:
+  No single sensitivity perturbation tested here closes the Mach-10 gap. The benchmark is therefore most consistent with a combined fidelity problem: approximate mission mass/thrust state + assumed Isp/mass-flow history + non-Falcon guidance, with smaller contributions from generic aerodynamics and frame/rotation simplifications. These effects are nonlinear and MUST NOT be numerically added as an &#x27;error budget&#x27;.
+
+WHY THE MACH-1 MATCH DOES NOT CONTRADICT THE MECO MISMATCH
+---------------------------------------------------------
+At ~70 s the vehicle has experienced much less cumulative mass depletion and guidance evolution than at 157 s. The sensitivity runs show that small changes in thrust-to-mass and Isp can shift the Mach-1 time by seconds and later MECO-state quantities by much larger amounts. A close early crossing can therefore coexist with a large late-state discrepancy through cumulative model error and/or cancellation among assumptions.
+
+SCIENTIFIC CLAIM BOUNDARY
+-------------------------
+SUPPORTED:
+  - LVA reproduces the rounded ~70 s supersonic anchor within ~0.9% in this proxy.
+  - At the imposed 157 s reference time, LVA is ~8.7 km below the rounded 80 km anchor and reports Mach ~6.07 instead of rounded Mach 10.
+  - Controlled sensitivity runs show high dependence on thrust-to-mass ratio, material dependence on Isp/mass-flow and guidance, and much smaller dependence on the tested Cd and rotation perturbations.
+  - A late throttle-down perturbation moves the result farther from the reference, so the baseline&#x27;s missing throttle-down is not the cause of its low-Mach result.
+
+NOT SUPPORTED:
+  - assigning an exact percentage of the CRS-5 error to any one missing model feature;
+  - treating the +/- perturbations as Falcon 9 uncertainty intervals;
+  - claiming the NASA rounded anchors are exact telemetry;
+  - claiming this proxy validates Falcon 9 flight guidance or aerodynamics.
+
+SUMMARY
+=======
+Mach-1 crossing:      model=69.385 s, NASA~70 s, nominal diff=0.879 %
+Altitude at 157 s:    model=71.305 km, NASA~80 km, nominal diff=10.868 %
+Mach at 157 s:        model=6.066, NASA~10, nominal diff=39.343 %
+Primary sensitivity finding: thrust-to-mass and mass-flow history dominate the tested late-state response; guidance materially controls altitude; tested Cd/rotation effects are smaller; throttle-down omission biases in the wrong direction to explain low Mach.
+Result:               BENCHMARK + ERROR DIAGNOSIS COMPLETE (descriptive; no pass/fail threshold)</code></pre>
+          </div>
+        </details>
+</section>
+
+      <section class="tech-section" aria-labelledby="remaining-title">
+        <div class="tech-section-head"><p class="tech-section-number">09 / STILL OPEN</p><div><h2 id="remaining-title">Validation is not finished.</h2><p>The evidence above closes several implementation questions, but it also identifies the next fidelity work instead of declaring victory because the page has enough green pixels.</p></div></div>
+        <div class="pending-list remaining-list">
+          <article class="pending-item"><span>OPEN 01</span><h3>Vehicle-specific aerodynamics</h3><p>The current Mach-Cd curve is generic. Drag cannot claim Falcon-level validation without a vehicle-specific aerodynamic reference or a defensible surrogate dataset.</p></article>
+          <article class="pending-item"><span>OPEN 02</span><h3>Falcon proxy reconstruction</h3><p>Replace aggregate mass/Isp/guidance assumptions with better mission-specific public data where available, then rerun the same benchmark without tuning directly to the target outputs.</p></article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div><strong>Launch Vehicle Analyzer</strong><p>Transparent, physics-based ascent and orbital-state analysis.</p></div>
+      <nav aria-label="Footer navigation"><a href="index.html">Home</a><a href="analyzer/analyzer.html">Analyzer</a><a href="validation.html" aria-current="page">Validation</a><a href="limitations.html">Limitations</a></nav>
+    </div>
+    <div class="footer-meta"><span>Built and documented by Vedant Verma</span><span>Model v0.1 · 2026</span></div>
+  </footer>
+</body>
+</html>

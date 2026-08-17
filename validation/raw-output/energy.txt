@@ -1,0 +1,50 @@
+RK4 TWO-BODY ENERGY-CONSERVATION VALIDATION
+===========================================
+Model under test: physics/integrator.js (RK4)
+Force field: independent Newtonian two-body gravity
+Atmosphere: OFF
+Drag: OFF
+Thrust: OFF
+Mass flow: OFF
+
+Earth radius used:       6,371,000 m
+Earth mu used:           3.986004418e+14 m^3/s^2
+Initial altitude:        200 km
+Initial orbital speed:   7.788487985 km/s
+RK4 time step:           1 s
+RK4 steps:               100
+Propagation duration:    100 s
+
+ENERGY
+------
+Initial specific energy: -30330272.546035606414 J/kg
+Final specific energy:   -30330272.546035613865 J/kg
+Final difference:        -7.450580597e-9 J/kg
+Final relative drift:    2.456483233e-14 %
+Maximum relative drift:  1.473889940e-13 %
+Maximum drift at step:   20 (t=20 s)
+
+SECONDARY CONSERVATION CHECK
+----------------------------
+Initial angular momentum: 51178154549.258613586 m^2/s
+Final angular momentum:   51178154549.258605957 m^2/s
+Relative drift:           1.490752177e-14 %
+
+SELECTED HISTORY
+----------------
+Step   0  t=  0 s  energy=-30330272.546035606 J/kg  drift=0.000000e+0 %
+Step  25  t= 25 s  energy=-30330272.546035629 J/kg  drift=7.369450e-14 %
+Step  50  t= 50 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+Step  75  t= 75 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+Step 100  t=100 s  energy=-30330272.546035614 J/kg  drift=2.456483e-14 %
+
+ACCEPTANCE CRITERION
+--------------------
+Maximum energy drift must remain <= 0.01% over all 100 RK4 steps.
+This tolerance tests numerical implementation/step-size behavior; it is not a physical-accuracy uncertainty for the real Earth.
+
+SUMMARY
+=======
+Maximum energy drift:    1.473889940e-13 %
+Allowed drift:           0.01000 %
+Result:                  PASS

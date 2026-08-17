@@ -1,0 +1,251 @@
+FALCON 9 CRS-5 PUBLIC-FLIGHT BENCHMARK + ERROR DIAGNOSIS
+========================================================
+Mission:           SpaceX CRS-5
+Vehicle version:   Falcon 9 v1.1
+Benchmark type:    approximate aggregate first-stage-ascent proxy
+Result semantics:  descriptive comparison + sensitivity diagnosis; NOT formal pass/fail
+
+PRIMARY SOURCES
+---------------
+SpaceX CRS-5 Mission Press Kit (NASA)
+https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  Mission-contemporaneous source for ~70 s supersonic time, ~157 s MECO, 80 km / Mach 10 at MECO, Falcon 9 diameter, Merlin 1D thrust, and the statement that first-stage engines are gradually throttled near the end of first-stage flight.
+
+Environmental Assessment for SpaceX Falcon Launches at KSC and CCAFS (FAA)
+https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+  Later FAA summary source. It describes Falcon 9 v1.1 as ~1,100,000 lb gross lift-off weight, lists version-level propellant/thrust data, notes that propellant quantities vary with mission parameters, and states that Falcon trajectories are mission-specific.
+
+NASA GSFC educational orbital-mechanics reference
+https://pwg.gsfc.nasa.gov/Education/JAS1.htm
+  Provides the useful reference that a due-east launch from Cape Canaveral near 28.5 deg N receives about 407 m/s of eastward inertial velocity from Earth's rotation. CRS-5 was not a simple due-east 2D launch, so 407 m/s is used only for a diagnostic sensitivity case.
+
+U.S. Standard Atmosphere, 1976 (NASA NTRS)
+https://ntrs.nasa.gov/citations/19770009539
+  Reference family for the lower-atmosphere convention. LVA's atmosphere implementation is validated separately; here it is used only for a derived Mach/speed-of-sound diagnostic.
+
+PUBLISHED FLIGHT REFERENCES
+---------------------------
+Supersonic time:
+  value:    70
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 reaches supersonic speed one minute and ten seconds after liftoff.
+  precision:This is a rounded narrative flight anchor, not high-rate telemetry with a stated uncertainty.
+MECO time:
+  value:    157
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states first-stage MECO occurs approximately 157 seconds into flight.
+  precision:The source explicitly says approximately; the benchmark therefore must not treat 157.000000 s as an exact telemetry truth.
+MECO altitude:
+  value:    80000
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 is 80 km high at MECO.
+  precision:The press kit reports 80 km as a rounded narrative value and does not provide an uncertainty interval.
+MECO Mach:
+  value:    10
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Launch and Ascent, p. 5
+  basis:    NASA states Falcon 9 is traveling at 10 times the speed of sound at MECO.
+  precision:Mach 10 is rounded and the source does not specify a local speed-of-sound convention or an explicit m/s velocity.
+
+PUBLISHED VEHICLE ANCHORS USED BY BASELINE
+------------------------------------------
+Approximate gross liftoff mass:
+  value:    approximately 1,100,000 lb
+  source:   https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+  location: Section 1.2.2, p. 23
+  note:     FAA describes Falcon 9 v1.1 gross lift-off weight as approximately 1.1 million pounds. This rounded value is used only as an aggregate initial-mass anchor.
+Diameter:
+  value:    12 ft
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit gives Falcon 9 diameter as 12 ft.
+First-stage sea-level thrust:
+  value:    9 engines x 654 kN each (147,000 lbf each)
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit states one Merlin 1D produces 654 kN at liftoff. This mission-contemporaneous source is preferred over later version-summary values.
+First-stage high-altitude/vacuum thrust anchor:
+  value:    9 engines x 716 kN each (161,000 lbf each)
+  source:   https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+  location: Falcon 9 Overview / Advanced Technology, pp. 15-16
+  note:     NASA CRS-5 press kit states one Merlin 1D rises to 716 kN as it climbs out of the atmosphere.
+
+PUBLIC-SOURCE CONSISTENCY WARNINGS
+----------------------------------
+FAA rounded v1.1 gross lift-off weight:  1,100,000 lb
+FAA v1.1 version-table total propellant: 1,120,925 lbm
+Propellant minus rounded gross value:    20,925 lb
+Interpretation: these aggregate public figures cannot be combined as an exact CRS-5 mass ledger. The FAA itself notes that propellant quantities vary by mission parameters; the gross value is explicitly approximate.
+Source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+NASA CRS-5 per-engine liftoff thrust: 147,000 lbf (654 kN)
+Later FAA v1.1 summary thrust:        170,000 lbf per engine
+Difference between public version summaries: 15.646 %
+Interpretation: vehicle-version/public-summary values changed across documents. The benchmark therefore uses the mission-contemporaneous CRS-5 NASA thrust anchor rather than mixing later values into the baseline.
+NASA source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+FAA source:  https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+UNSOURCED / EXPLICIT MODELING ASSUMPTIONS
+-----------------------------------------
+Aggregate usable propellant reservoir: 400,000 kg
+Isp sea level / vacuum:                282 s / 311 s
+Aerodynamics:                          generic assumed Mach-Cd table
+Guidance:                              built-in generic open-loop profile
+Throttle:                              constant 100% in baseline
+Earth rotation / launch latitude:      not modeled in baseline 2D ascent stack
+
+BASELINE STATE AT NASA-PUBLISHED MECO TIME
+------------------------------------------
+Evaluation time:      157.000 s (imposed from rounded reference; not a model-predicted MECO time)
+Model altitude:       71.305329 km
+NASA altitude:        80.000 km (rounded narrative anchor)
+Altitude difference:  -8.694671 km
+Nominal percent diff: 10.868338 %
+
+Model Mach:           6.065673929
+NASA Mach:            10.000 (rounded narrative anchor)
+Mach difference:      -3.934326071
+Nominal percent diff: 39.343261 %
+
+Model inertial speed: 1.787140068 km/s
+NASA explicit speed:  not provided in the press kit
+
+EARLY-ASCENT CROSS-CHECK
+------------------------
+Model Mach-1 crossing: 69.384774 s
+NASA supersonic time:  ~70 s (rounded narrative anchor)
+Timing difference:     -0.615226 s
+Nominal percent diff:  0.878895 %
+
+CONTROLLED ONE-AT-A-TIME SENSITIVITY RUNS
+-----------------------------------------
+These are DIAGNOSTIC perturbations, not claimed Falcon 9 uncertainties and not fitted parameters.
+Mass/thrust/Isp: +/-5%; Cd: +/-25%; guidance: deliberately steeper/shallower assumed pitch programs.
+The throttle-down and Cape-rotation cases are directionality tests, not CRS-5 reconstructions.
+
+case                              alt(km)   dAlt(km)   speed(km/s) dSpeed    Mach       dMach      Mach1(s)   dMach1(s)
+------------------------------------------------------------------------------------------------------------------
+BASELINE                            71.305      0.000     1.787140 0.000000   6.065674   0.000000     69.385       0.000
+Cd -25%                             71.525     +0.220     1.790715 +0.003575   6.086287  +0.020613     69.245      -0.140
+Cd +25%                             71.087     -0.219     1.783566 -0.003574   6.045169  -0.020505     69.525      +0.140
+Initial mass -5%                    82.254    +10.948     2.132353 +0.345213   7.632070  +1.566396     62.052      -7.333
+Initial mass +5%                    61.203    -10.103     1.497168 -0.289972   4.783932  -1.281742     77.507      +8.122
+Isp -5%                             74.784     +3.479     1.936489 +0.149349   6.684750  +0.619076     68.164      -1.221
+Isp +5%                             68.333     -2.973     1.667149 -0.119991   5.554676  -0.510998     70.539      +1.154
+Thrust -5%                          60.649    -10.656     1.482536 -0.304604   4.722468  -1.343206     77.988      +8.603
+Thrust +5%                          81.757    +10.452     2.115151 +0.328011   7.551702  +1.486028     62.358      -7.026
+More-vertical guidance              77.380     +6.075     1.731530 -0.055610   6.051137  -0.014537     69.383      -0.002
+More-horizontal guidance            63.382     -7.923     1.905721 +0.118581   6.165573  +0.099899     68.631      -0.754
+Approx. co-rotating Cape initial state   71.673     +0.367     2.122628 +0.335488   6.080098  +0.014424     69.337      -0.048
+Illustrative late throttle-down     70.635     -0.671     1.637186 -0.149954   5.533243  -0.532431     69.385      +0.000
+
+ERROR DIAGNOSIS A — MACH-1 CROSSING (~70 s)
+--------------------------------------------
+Observed nominal discrepancy: -0.615226 s (0.879 %).
+Reference limitation: NASA gives a rounded narrative time ('one minute and ten seconds'), not a telemetry uncertainty interval.
+Source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+
+Sensitivity to +/-5% initial mass: -7.333 s / +8.122 s
+Sensitivity to +/-5% thrust:       +8.603 s / -7.026 s
+Sensitivity to +/-5% Isp:          -1.221 s / +1.154 s
+Sensitivity to +/-25% Cd:          -0.140 s / +0.140 s
+Conclusion: the 0.615 s agreement is smaller than the response to several plausible diagnostic perturbations. It is encouraging, but it cannot by itself validate the Falcon-specific mass/thrust/aero model; compensating errors can produce a close Mach-1 time.
+
+ERROR DIAGNOSIS B — ALTITUDE AT 157 s
+-------------------------------------
+Observed nominal discrepancy: -8.694671 km (model low by 10.868 % relative to the rounded 80 km anchor).
+
+High-sensitivity inputs in this proxy:
+  Initial mass -5% / +5% -> altitude shift +10.948 / -10.103 km.
+  Thrust -5% / +5%       -> altitude shift -10.656 / +10.452 km.
+  These perturbations are not uncertainty claims, but they show that thrust-to-mass ratio is a dominant numerical lever. Public CRS-5 mass information is only approximate, and public version summaries are not internally precise enough to reconstruct the exact flight mass state.
+  FAA source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+Material guidance sensitivity:
+  More-vertical assumed profile   -> altitude shift +6.075 km.
+  More-horizontal assumed profile -> altitude shift -7.923 km.
+  FAA states Falcon trajectories are mission-specific; the public sources used here do not provide the CRS-5 pitch program. Guidance therefore materially affects altitude allocation and is a major unclosed fidelity term.
+  FAA source: https://www.faa.gov/sites/faa.gov/files/space/environmental/nepa_docs/SpaceX_Falcon_Program_Final_EA_and_FONSI.pdf
+
+Moderate mass-flow sensitivity:
+  Isp -5% / +5% -> altitude shift +3.479 / -2.973 km.
+  Baseline Isp is an explicit assumption. Because LVA derives mass flow from thrust/(Isp*g0), Isp changes the vehicle mass history and therefore acceleration.
+
+Low sensitivity in this experiment:
+  Cd -25% / +25% -> altitude shift +0.220 / -0.219 km.
+  Approximate Cape co-rotation -> altitude shift +0.367 km.
+  Therefore, within these perturbations, neither the generic Cd curve nor omitted rotation is large enough by itself to explain the ~8.7 km altitude shortfall.
+
+Wrong-direction / masking effect:
+  Illustrative late throttle-down -> altitude shift -0.671 km.
+  NASA states the real first-stage engines were gradually throttled near the end of first-stage flight. The baseline incorrectly stays at 100%; adding an illustrative throttle-down reduces altitude further. Therefore missing throttle-down does NOT explain why baseline altitude is too low; constant full throttle actually biases the proxy slightly toward the reference and masks some discrepancy.
+  NASA source: https://www.nasa.gov/wp-content/uploads/2018/07/spacex_nasa_crs-5_presskit-105.pdf
+
+ERROR DIAGNOSIS C — MACH AT 157 s
+---------------------------------
+Observed nominal discrepancy: model Mach 6.066 vs rounded NASA Mach 10 (39.343 % nominal difference).
+
+First separate vehicle-speed error from local speed-of-sound error:
+  LVA speed of sound at model altitude (71.305 km): 294.632 m/s.
+  LVA/USSA speed of sound at reference altitude (80 km):             282.537 m/s.
+  Holding MODEL speed fixed but evaluating at 80 km gives Mach:       6.325.
+  Original model Mach:                                                 6.066.
+  Altitude/acoustic shift therefore changes Mach by only:              0.260.
+  That is about 6.6 % of the total Mach gap under the LVA atmosphere convention.
+  Conclusion: most of the Mach discrepancy is a vehicle-speed/trajectory discrepancy, not an atmosphere speed-of-sound discrepancy.
+  Atmosphere reference family: https://ntrs.nasa.gov/citations/19770009539
+
+Derived diagnostic only (NOT a NASA-reported velocity):
+  Mach 10 at LVA's validated 80 km standard-atmosphere sound speed would correspond to ~2.825 km/s.
+  Baseline model speed is 1.787 km/s, a derived gap of -1.038 km/s.
+
+High-sensitivity inputs for Mach/speed in this proxy:
+  Initial mass -5% / +5% -> Mach shift +1.566 / -1.282.
+  Thrust -5% / +5%       -> Mach shift -1.343 / +1.486.
+  This again identifies the exact thrust-to-mass history as a dominant unresolved proxy input. The public mass anchor is approximate, and public Falcon version thrust summaries differ across documents.
+
+Moderate sensitivity:
+  Isp -5% / +5% -> Mach shift +0.619 / -0.511.
+  Isp is unsourced in the benchmark and directly controls modeled mass flow, so it is a material source of speed uncertainty.
+
+Smaller sensitivity for the tested perturbations:
+  More-vertical / horizontal guidance -> Mach shift -0.015 / +0.100.
+  Cd -25% / +25%                  -> Mach shift +0.021 / -0.021.
+  Approximate Cape co-rotation     -> Mach shift +0.014.
+  Guidance strongly moves altitude but only modestly changes Mach in these two diagnostic profiles; Cd and co-rotation are much too small here to explain a 3.93-Mach shortfall alone.
+
+Wrong-direction / masking effect:
+  Illustrative late throttle-down -> Mach shift -0.532.
+  Since the real vehicle throttled down near the end of first-stage flight, the baseline's constant 100% throttle should overstate late powered acceleration relative to a throttled case. It therefore cannot explain the low Mach; it partially hides the discrepancy.
+
+Coupled-model conclusion:
+  No single sensitivity perturbation tested here closes the Mach-10 gap. The benchmark is therefore most consistent with a combined fidelity problem: approximate mission mass/thrust state + assumed Isp/mass-flow history + non-Falcon guidance, with smaller contributions from generic aerodynamics and frame/rotation simplifications. These effects are nonlinear and MUST NOT be numerically added as an 'error budget'.
+
+WHY THE MACH-1 MATCH DOES NOT CONTRADICT THE MECO MISMATCH
+---------------------------------------------------------
+At ~70 s the vehicle has experienced much less cumulative mass depletion and guidance evolution than at 157 s. The sensitivity runs show that small changes in thrust-to-mass and Isp can shift the Mach-1 time by seconds and later MECO-state quantities by much larger amounts. A close early crossing can therefore coexist with a large late-state discrepancy through cumulative model error and/or cancellation among assumptions.
+
+SCIENTIFIC CLAIM BOUNDARY
+-------------------------
+SUPPORTED:
+  - LVA reproduces the rounded ~70 s supersonic anchor within ~0.9% in this proxy.
+  - At the imposed 157 s reference time, LVA is ~8.7 km below the rounded 80 km anchor and reports Mach ~6.07 instead of rounded Mach 10.
+  - Controlled sensitivity runs show high dependence on thrust-to-mass ratio, material dependence on Isp/mass-flow and guidance, and much smaller dependence on the tested Cd and rotation perturbations.
+  - A late throttle-down perturbation moves the result farther from the reference, so the baseline's missing throttle-down is not the cause of its low-Mach result.
+
+NOT SUPPORTED:
+  - assigning an exact percentage of the CRS-5 error to any one missing model feature;
+  - treating the +/- perturbations as Falcon 9 uncertainty intervals;
+  - claiming the NASA rounded anchors are exact telemetry;
+  - claiming this proxy validates Falcon 9 flight guidance or aerodynamics.
+
+SUMMARY
+=======
+Mach-1 crossing:      model=69.385 s, NASA~70 s, nominal diff=0.879 %
+Altitude at 157 s:    model=71.305 km, NASA~80 km, nominal diff=10.868 %
+Mach at 157 s:        model=6.066, NASA~10, nominal diff=39.343 %
+Primary sensitivity finding: thrust-to-mass and mass-flow history dominate the tested late-state response; guidance materially controls altitude; tested Cd/rotation effects are smaller; throttle-down omission biases in the wrong direction to explain low Mach.
+Result:               BENCHMARK + ERROR DIAGNOSIS COMPLETE (descriptive; no pass/fail threshold)

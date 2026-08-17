@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Model scope, assumptions, omissions, and interpretation limits for the Launch Vehicle Analyzer.">
+  <meta name="theme-color" content="#07111b">
+  <meta property="og:title" content="Limitations · Launch Vehicle Analyzer">
+  <meta property="og:description" content="What the Launch Vehicle Analyzer models, what it omits, and how its results should be interpreted.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <title>Limitations · Launch Vehicle Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="technical-pages.css">
+  <script src="technical-pages.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="index.html" aria-label="Launch Vehicle Analyzer home"><span class="brand-short">LVA</span><span class="brand-name">Launch Vehicle Analyzer</span></a>
+    <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="primary-nav"><span class="sr-only">Toggle navigation</span><span aria-hidden="true"></span><span aria-hidden="true"></span></button>
+    <nav class="primary-nav" id="primary-nav" data-nav aria-label="Primary navigation">
+      <a href="index.html#system">System</a>
+      <a href="index.html#physics">Physics</a>
+      <a href="index.html#traceability">Traceability</a>
+      <a href="validation.html">Validation</a>
+      <a href="limitations.html" class="current-page" aria-current="page">Limitations</a>
+    </nav>
+    <a class="header-action" href="analyzer/analyzer.html">Open analyzer <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main" class="tech-main">
+    <section class="tech-hero" aria-labelledby="page-title">
+      <div class="tech-hero-inner">
+        <div>
+          <p class="tech-kicker">MODEL SCOPE / ASSUMPTIONS / OMISSIONS</p>
+          <h1 id="page-title">Know where the model stops.</h1>
+          <p class="lead">The Analyzer is a transparent preliminary 2D ascent model. Its outputs are only as defensible as its assumptions, input data, and simplifications. This page states those boundaries explicitly rather than hoping nobody notices them.</p>
+          <div class="tech-actions"><a class="button button-primary" href="#model-boundaries">Inspect model boundaries <span aria-hidden="true">↓</span></a><a class="button button-secondary" href="validation.html">View validation</a></div>
+        </div>
+        <dl class="tech-hero-meta" aria-label="Model scope overview">
+          <div><dt>Trajectory</dt><dd>2D planar</dd></div>
+          <div><dt>Atmosphere</dt><dd>Lower model → 86 km</dd></div>
+          <div><dt>Staging</dt><dd>1–3 serial stages</dd></div>
+          <div><dt>Use case</dt><dd>Educational / preliminary</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="tech-content">
+      <section class="tech-section" aria-labelledby="disclaimer-title">
+        <div class="warning-band"><strong id="disclaimer-title">Not operational flight software</strong><p>The Launch Vehicle Analyzer is intended for educational and preliminary engineering analysis. It is not flight-certified, does not reproduce a complete launch-vehicle guidance/navigation/control stack, and should not be used for real launch operations, hazardous testing, or safety-critical decisions.</p></div>
+      </section>
+
+      <section class="tech-section" id="model-boundaries" aria-labelledby="boundary-title">
+        <div class="tech-section-head"><p class="tech-section-number">01 / SUBSYSTEMS</p><div><h2 id="boundary-title">Current model boundaries.</h2><p>Each subsystem is intentionally narrower than the physical system it represents. The useful question is not whether an approximation exists. Every model has them. The useful question is whether the approximation is visible.</p></div></div>
+        <div class="limit-grid">
+          <article class="limit-card" data-code="01"><span class="module">EARTH / GRAVITY</span><h3>Spherical central gravity</h3><dl><div><dt>Included</dt><dd>Earth-centred 2D geometry and inverse-square central gravity using μ.</dd></div><div><dt>Omitted</dt><dd>J2, oblateness, third-body gravity, local terrain and gravity anomalies.</dd></div><div><dt>Consequence</dt><dd>Suitable for transparent ascent/orbit fundamentals, not high-fidelity orbital perturbation analysis.</dd></div></dl></article>
+          <article class="limit-card" data-code="02"><span class="module">ATMOSPHERE</span><h3>Standard lower atmosphere</h3><dl><div><dt>Included</dt><dd>Layered temperature, pressure, density and speed of sound through 86 km geometric altitude.</dd></div><div><dt>Omitted</dt><dd>Weather, humidity, seasonal/latitude variation, thermosphere/exosphere physics and automatic wind fields.</dd></div><div><dt>Consequence</dt><dd>Above 86 km the current default is an explicit vacuum approximation, not a physical upper-atmosphere model.</dd></div></dl></article>
+          <article class="limit-card" data-code="03"><span class="module">PROPULSION</span><h3>Performance-anchor model</h3><dl><div><dt>Included</dt><dd>Sea-level/vacuum thrust anchors, pressure interpolation, effective Isp and mass flow.</dd></div><div><dt>Omitted</dt><dd>Chamber thermodynamics, nozzle geometry, mixture ratio, engine transients, ignition dynamics and detailed throttle maps.</dd></div><div><dt>Consequence</dt><dd>Useful for stage-level performance propagation, not rocket-engine design or off-nominal engine simulation.</dd></div></dl></article>
+          <article class="limit-card" data-code="04"><span class="module">AERODYNAMICS</span><h3>Drag-only Mach-Cd model</h3><dl><div><dt>Included</dt><dd>Relative airspeed, Mach, dynamic pressure, Cd(M), reference area and drag vector.</dd></div><div><dt>Omitted</dt><dd>Lift, Reynolds-number dependence, angle-of-attack dependence, aeroelasticity and CFD-level flow effects.</dd></div><div><dt>Consequence</dt><dd>The built-in Cd curve is generic and assumed. Vehicle-level drag accuracy requires vehicle-specific aerodynamic data.</dd></div></dl></article>
+          <article class="limit-card" data-code="05"><span class="module">GUIDANCE</span><h3>Open-loop 2D thrust direction</h3><dl><div><dt>Included</dt><dd>Radial/tangential primitives, generic assumed ascent profile and user-defined pitch programs.</dd></div><div><dt>Omitted</dt><dd>Closed-loop orbital targeting, attitude-control dynamics, navigation errors, launch azimuth logic and vehicle-specific GNC.</dd></div><div><dt>Consequence</dt><dd>The default trajectory is a demonstrator, not a recreation of an operational launch guidance algorithm.</dd></div></dl></article>
+          <article class="limit-card" data-code="06"><span class="module">DYNAMICS</span><h3>2D translational motion</h3><dl><div><dt>Included</dt><dd>Position, velocity, mass, gravity, thrust and drag in an Earth-centred plane.</dd></div><div><dt>Omitted</dt><dd>6-DOF attitude, body rates, moments, structural flex, slosh, control surfaces and rigid-body rotational dynamics.</dd></div><div><dt>Consequence</dt><dd>Good for trajectory-level coupling, not stability/control or structural-load certification.</dd></div></dl></article>
+          <article class="limit-card" data-code="07"><span class="module">STAGING</span><h3>Idealized serial events</h3><dl><div><dt>Included</dt><dd>Usable-propellant depletion, burnout, optional separation delay, mass discard and activation of the next serial stage.</dd></div><div><dt>Omitted</dt><dd>Parallel boosters, plume interaction, separation impulse, pyrotechnics, collision dynamics and detailed sequencing hardware.</dd></div><div><dt>Consequence</dt><dd>Serial mass bookkeeping is modeled; physical separation behavior is not.</dd></div></dl></article>
+          <article class="limit-card" data-code="08"><span class="module">ORBIT / NUMERICS</span><h3>Two-body state + fixed-step RK4</h3><dl><div><dt>Included</dt><dd>Osculating planar orbit analysis and event-aware fixed-step RK4 state propagation.</dd></div><div><dt>Omitted</dt><dd>3D elements, perturbations, adaptive timestep/error control and long-duration high-fidelity propagation.</dd></div><div><dt>Consequence</dt><dd>Final orbital state is a two-body interpretation of the simulated state, not a complete mission-propagation solution.</dd></div></dl></article>
+        </div>
+      </section>
+
+      <section class="tech-section" aria-labelledby="dominant-title">
+        <div class="tech-section-head"><p class="tech-section-number">02 / DOMINANT UNCERTAINTY</p><div><h2 id="dominant-title">The default example is not a real rocket.</h2><p>Two assumptions dominate how seriously the default trajectory should be interpreted: aerodynamic data and guidance.</p></div></div>
+        <div class="status-grid">
+          <article class="status-card"><span class="code">AERODYNAMICS</span><strong>Generic Cd(M)</strong><p>The included Mach-Cd table exists to exercise the model. It is not published aerodynamic data for a specific launch vehicle.</p><span class="status-pill status-pending">Assumed input</span></article>
+          <article class="status-card"><span class="code">GUIDANCE</span><strong>Generic pitch profile</strong><p>The default profile is open-loop and transparent, not calibrated to a real flight and not an orbital optimizer.</p><span class="status-pill status-pending">Assumed input</span></article>
+          <article class="status-card"><span class="code">VEHICLE DATA</span><strong>User supplied</strong><p>Thrust, Isp, masses and geometry can be published, derived, estimated or assumed. Input quality directly controls result quality.</p><span class="status-pill status-scope">Traceable</span></article>
+          <article class="status-card"><span class="code">TARGET</span><strong>Tolerance-based</strong><p>A target-orbit match is a numerical comparison against requested periapsis/apoapsis tolerances, not proof of mission feasibility.</p><span class="status-pill status-scope">Interpret carefully</span></article>
+        </div>
+      </section>
+
+      <section class="tech-section" aria-labelledby="meaning-title">
+        <div class="tech-section-head"><p class="tech-section-number">03 / INTERPRETATION</p><div><h2 id="meaning-title">What results do and do not mean.</h2><p>A number can be computed to twelve decimals and still be based on an assumption made five lines earlier. Precision and accuracy remain stubbornly different concepts.</p></div></div>
+        <div class="interpret-grid">
+          <article class="interpret-column"><h3>Results can be used to</h3><ul><li>Explore how stage mass, propulsion, drag and guidance interact in a coupled ascent model.</li><li>Compare transparent modeling assumptions and observe how they propagate into trajectory and final orbital state.</li><li>Study Max-Q, staging events, mass evolution and basic two-body orbital properties.</li><li>Build validation exercises around known analytic cases and documented public vehicle data.</li></ul></article>
+          <article class="interpret-column"><h3>Results should not be used to</h3><ul><li>Plan or execute a real launch, engine firing, hazardous experiment, or safety-critical operation.</li><li>Claim flight accuracy when aerodynamic and guidance inputs are generic assumptions.</li><li>Infer structural margins, stability, control authority, thermal loads or engine internal behavior.</li><li>Replace professional high-fidelity mission-design, CFD, GNC, structural or flight-certified software.</li></ul></article>
+        </div>
+      </section>
+
+      <section class="tech-section" aria-labelledby="improve-title">
+        <div class="tech-section-head"><p class="tech-section-number">04 / REDUCING UNCERTAINTY</p><div><h2 id="improve-title">How the model earns stronger claims.</h2><p>Higher confidence should come from evidence, not from adding more decimal places or a darker interface.</p></div></div>
+        <div class="pending-list">
+          <article class="pending-item"><span>STEP 01</span><h3>Validate the atmosphere across layers</h3><p>Independent reference values at the defined altitude checkpoints should be compared with percentage error for T, P and ρ.</p></article>
+          <article class="pending-item"><span>STEP 02</span><h3>Use vehicle-specific Cd data</h3><p>Replace the generic aerodynamic curve with traceable geometry-specific or published data where available.</p></article>
+          <article class="pending-item"><span>STEP 03</span><h3>Benchmark a documented flight</h3><p>Compare modeled staging milestones and trajectory states with public flight data, reporting disagreement rather than hiding it.</p></article>
+          <article class="pending-item"><span>STEP 04</span><h3>Perform convergence and sensitivity studies</h3><p>Quantify numerical timestep sensitivity separately from uncertainty caused by physical-model inputs.</p></article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div><strong>Launch Vehicle Analyzer</strong><p>Transparent, physics-based ascent and orbital-state analysis.</p></div>
+      <nav aria-label="Footer navigation"><a href="index.html">Home</a><a href="analyzer/analyzer.html">Analyzer</a><a href="validation.html">Validation</a><a href="limitations.html" aria-current="page">Limitations</a></nav>
+    </div>
+    <div class="footer-meta"><span>Built and documented by Vedant Verma</span><span>Model v0.1 · 2026</span></div>
+  </footer>
+</body>
+</html>

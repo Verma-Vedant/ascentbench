@@ -1,0 +1,98 @@
+200 KM CIRCULAR-ORBIT VALIDATION
+================================
+Model under test: physics/orbit.js
+Reference method: independent two-body circular-orbit equations
+Reference Earth radius: 6,371,000 m
+Reference Earth mu:     3.986004418e+14 m^3/s^2
+Test altitude:          200 km
+
+REFERENCE STATE
+---------------
+Radius:                 6571000.000 m
+Circular speed:         7788.487984973 m/s  (7.788487985 km/s)
+Orbital period:         5301.004602323 s  (88.350077 min)
+Specific energy:        -30330272.546036 J/kg
+
+MODEL OUTPUT
+------------
+Radius:                 6571000.000000 m
+Altitude:               200000.000000 m
+Speed:                  7788.487984973 m/s
+Circular speed:         7788.487984973 m/s
+Radial velocity:        0.000000e+0 m/s
+Tangential velocity:    7788.487984973 m/s
+Specific energy:        -30330272.546036 J/kg
+Angular momentum:       51178154549.258614 m^2/s
+Eccentricity:           0.000000e+0
+Semi-major axis:        6571000.000000 m
+Periapsis altitude:     200000.000000 m
+Apoapsis altitude:      200000.000000 m
+Orbital period:         5301.004602323 s
+Basic classification:   BOUND_ORBIT
+Target classification:  TARGET_ORBIT
+
+CHECKS
+------
+PASS  Circular speed
+      model=7788.487984973157
+      ref=7788.487984973157
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-6 m/s
+PASS  Orbital period
+      model=5301.004602322611
+      ref=5301.004602322611
+      error=0.000000e+0 s
+      tolerance=1.000000e-6 s
+PASS  Specific orbital energy
+      model=-30330272.546035606414
+      ref=-30330272.546035610139
+      error=1.228242e-14 % relative
+      tolerance=1.000000e-9 % relative
+PASS  Specific angular momentum
+      model=51178154549.258613586426
+      ref=51178154549.258613586426
+      error=0.000000e+0 % relative
+      tolerance=1.000000e-9 % relative
+PASS  Eccentricity
+      model=0.000000000000
+      ref=0.000000000000
+      error=0.000000e+0 absolute
+      tolerance=1.000000e-10 absolute
+PASS  Semi-major axis
+      model=6571000.000000000931
+      ref=6571000.000000000000
+      error=9.313226e-10 m
+      tolerance=1.000000e-3 m
+PASS  Periapsis altitude
+      model=200000.000000000000
+      ref=200000.000000000000
+      error=0.000000e+0 m
+      tolerance=1.000000e-3 m
+PASS  Apoapsis altitude
+      model=200000.000000000931
+      ref=200000.000000000000
+      error=9.313226e-10 m
+      tolerance=1.000000e-3 m
+PASS  Radial velocity
+      model=0.000000000000
+      ref=0.000000000000
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-9 m/s
+PASS  Tangential velocity
+      model=7788.487984973157
+      ref=7788.487984973157
+      error=0.000000e+0 m/s
+      tolerance=1.000000e-6 m/s
+PASS  Basic classification = BOUND_ORBIT
+PASS  200 km target orbit recognized
+
+SUMMARY
+=======
+Reference circular speed: 7.788487985 km/s
+Model circular speed:     7.788487985 km/s
+Reference orbital period: 5301.004602 s
+Model orbital period:     5301.004602 s
+Eccentricity:             0.000000e+0
+Periapsis altitude:       200.000000000 km
+Apoapsis altitude:        200.000000000 km
+Result: PASS

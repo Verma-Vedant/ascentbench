@@ -1,0 +1,18 @@
+{
+  "name": "ascentbench",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Open-source educational launch-vehicle simulator for exploring ascent physics, staging, orbital mechanics, numerical integration, and model validation.",
+  "scripts": {
+    "test": "node tests/smoke.mjs",
+    "validate:atmosphere": "node validation/atmosphere-validation.js",
+    "validate:orbit": "node validation/orbit-validation.js",
+    "validate:energy": "node validation/energy-validation.js",
+    "validate:convergence": "node validation/convergence-validation.js",
+    "validate:staging": "node validation/staging-validation.js",
+    "validate:falcon9": "node validation/falcon9-validation.js"
+  },
+  "license": "MIT",
+  "homepage": "https://ascentbench.info"
+}

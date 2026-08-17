@@ -1,0 +1,110 @@
+RK4 FULL-SIMULATION TIMESTEP-CONVERGENCE VALIDATION
+===================================================
+Model under test: integrated Analyzer simulation stack
+Integrator:       classical RK4
+Vehicle:          Example Two-Stage Vehicle
+Guidance:         built-in generic assumed profile
+Cd model:         built-in generic assumed Mach-Cd table
+Only quantity changed between runs: solver.dt
+
+Timesteps tested: 1, 0.5, 0.2, 0.1, 0.05 s
+Project default:  0.2 s
+Fine reference:   0.05 s
+
+RUN RESULTS
+-----------
+ dt(s)   steps    maxAlt(km)   maxSpeed(km/s)   Mach@50km   maxQ(kPa)   peri(km)      apo(km)        ecc
+  1.00     356    293.242437      10.023551042   4.2654755    40.541461   261.698795   28621.120496  0.681310386
+  0.50     712    293.242539      10.023550481   4.2654354    40.553843   261.698852   28621.099992  0.681310227
+  0.20    1778    293.242540      10.023550438   4.2654275    40.553665   261.698850   28621.098118  0.681310213
+  0.10    3556    293.242536      10.023550473   4.2654273    40.553830   261.698848   28621.099529  0.681310223
+  0.05    7112    293.242537      10.023550482   4.2654272    40.553896   261.698849   28621.099957  0.681310227
+
+STAGE BURNOUT TIMES
+-------------------
+dt=1.00 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.50 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.20 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.10 s  S1=148.774056098 s  S2=355.536908098 s
+dt=0.05 s  S1=148.774056098 s  S2=355.536908098 s
+
+MAXIMUM MACH DIAGNOSTIC (NOT AN ACCEPTANCE METRIC)
+-------------------------------------------------
+dt=1.00 s  maximum reported Mach=8.584980622
+dt=0.50 s  maximum reported Mach=8.702895014
+dt=0.20 s  maximum reported Mach=8.679156686
+dt=0.10 s  maximum reported Mach=8.702894779
+dt=0.05 s  maximum reported Mach=8.714793018
+Maximum reported Mach is intentionally excluded from PASS/FAIL because Mach becomes undefined above the 86 km atmosphere-model boundary; the last sub-86-km sample therefore shifts with timestep.
+Mach at a fixed 50 km geometric altitude is used instead.
+
+DEFAULT dt = 0.2 s VS FINE dt = 0.05 s
+---------------------------------------
+PASS  Maximum altitude
+      dt=0.2: 293242.539528143592
+      dt=0.05:293242.536922068335
+      relative difference=8.887098e-7 %
+      tolerance=0.01000 %
+PASS  Maximum speed
+      dt=0.2: 10023.550437664569
+      dt=0.05:10023.550482190221
+      relative difference=4.442104e-7 %
+      tolerance=0.01000 %
+PASS  Mach at 50 km geometric altitude
+      dt=0.2: 4.265427478088
+      dt=0.05:4.265427182516
+      relative difference=6.929494e-6 %
+      tolerance=0.01000 %
+PASS  Maximum dynamic pressure
+      dt=0.2: 40553.664829958878
+      dt=0.05:40553.895568308675
+      relative difference=5.689672e-4 %
+      tolerance=0.01000 %
+PASS  Periapsis altitude
+      dt=0.2: 261698.849793746136
+      dt=0.05:261698.849114250392
+      relative difference=2.596480e-7 %
+      tolerance=0.01000 %
+PASS  Apoapsis altitude
+      dt=0.2: 28621098.117783337831
+      dt=0.05:28621099.956778533757
+      relative difference=6.425313e-6 %
+      tolerance=0.01000 %
+PASS  Eccentricity
+      dt=0.2: 0.681310212518
+      dt=0.05:0.681310226625
+      relative difference=2.070606e-6 %
+      tolerance=0.01000 %
+PASS  Stage 1 burnout time
+      dt=0.2: 148.774056097564 s
+      dt=0.05:148.774056097549 s
+      difference=1.475087e-11 s
+      tolerance=0.200 s
+PASS  Stage 2 burnout time
+      dt=0.2: 355.536908097549 s
+      dt=0.05:355.536908097592 s
+      difference=4.274625e-11 s
+      tolerance=0.200 s
+PASS  Final mass consistency
+      dt=0.2: 5000.000000000 kg
+      dt=0.05:5000.000000000 kg
+      difference=0.000000e+0 kg
+      tolerance=1.000000e-6 kg
+PASS  Orbit classification unchanged (BOUND_ORBIT)
+PASS  Termination reason unchanged (allStagesComplete)
+
+ACCEPTANCE CRITERION
+--------------------
+For the project default dt=0.2 s, selected continuous outputs must differ by <= 0.01% from the dt=0.05 s run.
+Stage-burnout times must differ by <= 0.2 s, final mass must agree within 0.000001 kg, and classifications must remain unchanged.
+These are numerical-convergence criteria only. They do not measure real-world launch accuracy.
+
+SUMMARY
+=======
+Default timestep:                   0.2 s
+Fine comparison timestep:           0.05 s
+Worst default-vs-fine difference:   5.689672e-4 % (Maximum dynamic pressure)
+Allowed continuous difference:      0.01000 %
+Default integration steps:          1778
+Fine integration steps:             7112
+Result:                             PASS

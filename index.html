@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Launch Vehicle Analyzer — transparent, physics-based launch vehicle ascent and orbital-state analysis.">
+  <meta name="theme-color" content="#07111b">
+  <meta property="og:title" content="Launch Vehicle Analyzer">
+  <meta property="og:description" content="Transparent, physics-based launch vehicle ascent and orbital-state analysis.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <title>Launch Vehicle Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="#home" aria-label="Launch Vehicle Analyzer home">
+      <span class="brand-short">LVA</span>
+      <span class="brand-name">Launch Vehicle Analyzer</span>
+    </a>
+
+    <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="primary-nav">
+      <span class="sr-only">Toggle navigation</span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <nav class="primary-nav" id="primary-nav" data-nav aria-label="Primary navigation">
+      <a href="#system">System</a>
+      <a href="#flight">Flight</a>
+      <a href="#physics">Physics</a>
+      <a href="#traceability">Traceability</a>
+      <a href="#architecture">Architecture</a>
+      <a href="validation.html">Validation</a>
+      <a href="limitations.html">Limitations</a>
+    </nav>
+
+    <a class="header-action" href="analyzer/analyzer.html">Open analyzer <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+
+      <div class="hero-copy">
+        <p class="eyebrow">PHYSICS-BASED ASCENT & ORBITAL-STATE ANALYSIS</p>
+        <h1 id="hero-title">Launch Vehicle<br><span>Analyzer</span></h1>
+        <p class="hero-summary">
+          A transparent framework for modeling launch vehicle ascent from the lower atmosphere
+          to final orbital-state analysis, with assumptions, equations, and model boundaries kept visible.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button button-primary" href="#system">Explore the model <span aria-hidden="true">↓</span></a>
+          <a class="button button-secondary" href="#architecture">View architecture</a>
+        </div>
+
+        <dl class="hero-model-strip" aria-label="Current model scope">
+          <div><dt>Dynamics</dt><dd>2D</dd></div>
+          <div><dt>Atmosphere</dt><dd>Lower model</dd></div>
+          <div><dt>Integrator</dt><dd>RK4</dd></div>
+          <div><dt>Staging</dt><dd>Serial</dd></div>
+          <div><dt>Orbit</dt><dd>Planar 2-body</dd></div>
+        </dl>
+      </div>
+
+      <div class="hero-visual" aria-label="Illustrative engineering visualization of a rocket ascending from Earth through the atmosphere toward orbit">
+        <svg class="hero-scene" viewBox="0 0 1000 700" role="img" aria-labelledby="scene-title scene-desc">
+          <title id="scene-title">Illustrative launch trajectory</title>
+          <desc id="scene-desc">A launch vehicle rises from Earth, passes Max-Q and a stage separation event, and approaches orbital-state analysis.</desc>
+          <defs>
+            <linearGradient id="spaceGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#02060b"/><stop offset="52%" stop-color="#071928"/>
+              <stop offset="78%" stop-color="#174761"/><stop offset="100%" stop-color="#86b7c7"/>
+            </linearGradient>
+            <linearGradient id="earthGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#76a6b8"/><stop offset="16%" stop-color="#356579"/>
+              <stop offset="52%" stop-color="#223c48"/><stop offset="100%" stop-color="#10191c"/>
+            </linearGradient>
+            <linearGradient id="flameGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/><stop offset="25%" stop-color="#ffd79d"/>
+              <stop offset="68%" stop-color="#ff9d4d"/><stop offset="100%" stop-color="#f0642f" stop-opacity="0"/>
+            </linearGradient>
+            <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <rect width="1000" height="700" fill="url(#spaceGradient)"/>
+          <g opacity=".7" fill="#d8ecf5">
+            <circle cx="770" cy="65" r="1.4"/><circle cx="865" cy="148" r="1.1"/><circle cx="710" cy="210" r=".9"/>
+            <circle cx="590" cy="84" r="1.2"/><circle cx="928" cy="255" r=".8"/><circle cx="820" cy="316" r="1.2"/>
+            <circle cx="635" cy="274" r=".8"/><circle cx="520" cy="155" r="1"/>
+          </g>
+          <path d="M-80 650 C170 480 560 470 1080 560 L1080 760 L-80 760Z" fill="url(#earthGradient)"/>
+          <path d="M-40 615 C185 455 565 455 1040 535" fill="none" stroke="#a9e0ef" stroke-width="5" opacity=".82"/>
+          <path d="M-40 606 C185 448 565 448 1040 528" fill="none" stroke="#4aa8d0" stroke-width="17" opacity=".18"/>
+          <g opacity=".42" fill="#6d775f">
+            <path d="M70 595 L170 520 L228 575 L305 500 L388 575 L430 590Z"/>
+            <path d="M420 560 L505 494 L565 546 L640 498 L710 560Z"/>
+          </g>
+          <path class="trajectory-path" d="M210 570 C285 505 335 424 410 345 C510 240 635 170 824 112" fill="none" stroke="#b9d9e7" stroke-width="2.2" stroke-dasharray="8 8"/>
+          <g class="trajectory-event">
+            <circle cx="327" cy="438" r="6"/><line x1="327" y1="438" x2="260" y2="412"/>
+            <text x="158" y="405">MAX-Q</text><text x="158" y="424" class="event-sub">Peak dynamic pressure</text>
+          </g>
+          <g class="trajectory-event">
+            <circle cx="505" cy="245" r="6"/><line x1="505" y1="245" x2="558" y2="218"/>
+            <text x="567" y="211">STAGE 1 SEPARATION</text><text x="567" y="230" class="event-sub">Discrete mass event</text>
+          </g>
+          <g class="trajectory-event">
+            <circle cx="824" cy="112" r="6"/><line x1="824" y1="112" x2="800" y2="78"/>
+            <text x="698" y="58">ORBITAL STATE</text><text x="698" y="77" class="event-sub">r + v → orbit analysis</text>
+          </g>
+          <g transform="translate(394 365) rotate(40)">
+            <path d="M0 -35 C16 -22 18 12 0 33 C-18 12 -16 -22 0 -35Z" fill="#edf4f7"/>
+            <path d="M-13 9 L-28 29 L-10 23Z" fill="#b9c8d0"/><path d="M13 9 L28 29 L10 23Z" fill="#b9c8d0"/>
+            <path d="M-7 30 L0 78 L7 30Z" fill="url(#flameGradient)" filter="url(#glow)"/>
+          </g>
+        </svg>
+
+        <aside class="flight-state" aria-label="Illustrative flight-state values">
+          <header><span>FLIGHT STATE</span><span class="illustrative">ILLUSTRATIVE</span></header>
+          <dl>
+            <div><dt>Altitude</dt><dd data-telemetry="altitude">32.8 km</dd></div>
+            <div><dt>Velocity</dt><dd data-telemetry="velocity">1.21 km/s</dd></div>
+            <div><dt>Mach</dt><dd data-telemetry="mach">3.98</dd></div>
+            <div><dt>Dynamic pressure</dt><dd data-telemetry="q">8.74 kPa</dd></div>
+            <div><dt>Stage</dt><dd data-telemetry="stage">1</dd></div>
+          </dl>
+          <p>Landing-page visualization only. Not simulator output.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="system-section section-shell" id="system" aria-labelledby="system-title">
+      <div class="section-intro">
+        <p class="section-number">02 / SYSTEM</p>
+        <div>
+          <p class="eyebrow blue">HOW THE SIMULATION WORKS</p>
+          <h2 id="system-title">A launch is a coupled physical system.</h2>
+          <p>The vehicle state is propagated through interacting environment, force, guidance, numerical integration, staging, and orbital-analysis models.</p>
+        </div>
+      </div>
+
+      <div class="system-flow" role="img" aria-label="Vehicle data feeds environment and force models, then dynamics, numerical integration, staging, and orbital analysis">
+        <article><span>01</span><strong>Vehicle</strong><small>Mass · stages · propulsion</small></article><i aria-hidden="true">→</i>
+        <article><span>02</span><strong>Environment</strong><small>Gravity · atmosphere</small></article><i aria-hidden="true">→</i>
+        <article><span>03</span><strong>Forces</strong><small>Thrust · drag · weight</small></article><i aria-hidden="true">→</i>
+        <article class="core"><span>04</span><strong>Dynamics</strong><small>ΣF → state derivatives</small></article><i aria-hidden="true">→</i>
+        <article><span>05</span><strong>Integration</strong><small>RK4 state propagation</small></article><i aria-hidden="true">→</i>
+        <article><span>06</span><strong>Staging</strong><small>Burnout · separation</small></article><i aria-hidden="true">→</i>
+        <article><span>07</span><strong>Orbit</strong><small>State → orbital properties</small></article>
+      </div>
+    </section>
+
+    <section class="flight-section" id="flight" aria-labelledby="flight-title">
+      <div class="section-shell">
+        <div class="section-intro compact">
+          <p class="section-number">03 / FLIGHT</p>
+          <div><p class="eyebrow blue">FOLLOW THE VEHICLE</p><h2 id="flight-title">From dense atmosphere to orbital state.</h2></div>
+        </div>
+
+        <div class="flight-story">
+          <article>
+            <div class="flight-image liftoff-visual" aria-hidden="true"><span class="mini-rocket vertical"></span></div>
+            <div class="flight-content"><span>01 / LIFTOFF</span><h3>Propulsion begins changing the vehicle state.</h3><p>Gravity, thrust, mass flow, and the lower atmosphere immediately interact.</p><ul><li>propulsion</li><li>gravity</li><li>atmosphere</li></ul></div>
+          </article>
+          <article>
+            <div class="flight-image atmosphere-visual" aria-hidden="true"><span class="mini-rocket rising"></span></div>
+            <div class="flight-content"><span>02 / ATMOSPHERIC FLIGHT</span><h3>Density and Mach shape aerodynamic loading.</h3><p>Relative airspeed, speed of sound, dynamic pressure, and Cd determine drag.</p><ul><li>atmosphere</li><li>aerodynamics</li><li>guidance</li></ul></div>
+          </article>
+          <article>
+            <div class="flight-image stage-visual" aria-hidden="true"><span class="mini-rocket upper"></span><span class="stage-piece"></span></div>
+            <div class="flight-content"><span>03 / STAGE EVENT</span><h3>Continuous integration meets a discrete event.</h3><p>Burnout is detected, the step is split safely, and discarded stage mass is removed.</p><ul><li>integrator</li><li>staging</li><li>dynamics</li></ul></div>
+          </article>
+          <article>
+            <div class="flight-image orbit-visual" aria-hidden="true"><span class="orbit-ring"></span><span class="orbit-dot"></span></div>
+            <div class="flight-content"><span>04 / ORBITAL STATE</span><h3>Position and velocity determine the resulting orbit.</h3><p>Energy, angular momentum, eccentricity, periapsis, and apoapsis describe the final state.</p><ul><li>orbit</li><li>state analysis</li></ul></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="physics-section section-shell" id="physics" aria-labelledby="physics-title">
+      <div class="section-intro">
+        <p class="section-number">04 / PHYSICS</p>
+        <div><p class="eyebrow blue">INSIDE THE PHYSICS ENGINE</p><h2 id="physics-title">Model scope, without pretending at false precision.</h2><p>Select a model to inspect what it receives, what it computes, and where its assumptions stop.</p></div>
+      </div>
+
+      <div class="physics-workbench">
+        <div class="physics-tabs" role="tablist" aria-label="Physics models">
+          <button role="tab" aria-selected="true" aria-controls="model-panel" data-model="gravity">Gravity</button>
+          <button role="tab" aria-selected="false" aria-controls="model-panel" data-model="atmosphere">Atmosphere</button>
+          <button role="tab" aria-selected="false" aria-controls="model-panel" data-model="propulsion">Propulsion</button>
+          <button role="tab" aria-selected="false" aria-controls="model-panel" data-model="aerodynamics">Aerodynamics</button>
+          <button role="tab" aria-selected="false" aria-controls="model-panel" data-model="guidance">Guidance</button>
+          <button role="tab" aria-selected="false" aria-controls="model-panel" data-model="orbit">Orbit</button>
+        </div>
+
+        <div class="model-panel" id="model-panel" role="tabpanel" tabindex="0">
+          <div class="model-title">
+            <span data-model-index>01</span>
+            <div><p data-model-kicker>GRAVITY MODEL</p><h3 data-model-title>Central spherical-Earth gravity</h3></div>
+            <span class="status status-implemented">IMPLEMENTED</span>
+          </div>
+          <div class="model-specs">
+            <dl>
+              <div><dt>Relation</dt><dd data-model-equation>g = μ / r²</dd></div>
+              <div><dt>Input</dt><dd data-model-input>Earth-centred position</dd></div>
+              <div><dt>Output</dt><dd data-model-output>Acceleration vector</dd></div>
+              <div><dt>Module</dt><dd><code data-model-module>gravity.js</code></dd></div>
+            </dl>
+            <div class="model-note"><span>MODEL BOUNDARY</span><p data-model-limit>J2, oblateness, third-body gravity, and local terrain effects are not modeled.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trace-section" id="traceability" aria-labelledby="trace-title">
+      <div class="section-shell">
+        <div class="section-intro light">
+          <p class="section-number">05 / TRACEABILITY</p>
+          <div><p class="eyebrow cyan">TRANSPARENT BY DESIGN</p><h2 id="trace-title">A value should never enter the model anonymously.</h2><p>Vehicle data can distinguish published, derived, estimated, and assumed values, with confidence recorded separately.</p></div>
+        </div>
+
+        <div class="trace-flow">
+          <article><span>VALUE</span><strong>Vacuum thrust</strong><small>Vehicle input</small></article><i aria-hidden="true">→</i>
+          <article><span>ORIGIN</span><strong class="published">Published</strong><small>Confidence recorded</small></article><i aria-hidden="true">→</i>
+          <article><span>MODEL</span><strong>propulsion.js</strong><small>Pressure interpolation</small></article><i aria-hidden="true">→</i>
+          <article><span>PROPAGATES TO</span><strong>Trajectory state</strong><small>Thrust → acceleration → orbit</small></article>
+        </div>
+
+        <div class="trace-meta">
+          <div><span class="legend-dot published-dot"></span><strong>Published</strong><p>Directly sourced value.</p></div>
+          <div><span class="legend-dot derived-dot"></span><strong>Derived</strong><p>Computed from other values.</p></div>
+          <div><span class="legend-dot estimated-dot"></span><strong>Estimated</strong><p>Approximation from available evidence.</p></div>
+          <div><span class="legend-dot assumed-dot"></span><strong>Assumed</strong><p>Explicit modeling assumption.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="architecture-section section-shell" id="architecture" aria-labelledby="architecture-title">
+      <div class="section-intro">
+        <p class="section-number">06 / ARCHITECTURE</p>
+        <div><p class="eyebrow blue">MODULAR BY RESPONSIBILITY</p><h2 id="architecture-title">The numerical integrator does not know it is flying a rocket.</h2><p>Physics remains replaceable and inspectable; continuous state propagation stays separate from discrete stage events.</p></div>
+      </div>
+
+      <div class="architecture-board" role="img" aria-label="Vehicle model and environmental models feed dynamics, then numerical integration, staging, and orbit analysis">
+        <div class="architecture-layer top-layer"><div class="arch-node data-node"><span>DATA</span><strong>vehicle-model.js</strong></div></div>
+        <div class="arch-down" aria-hidden="true">↓</div>
+        <div class="architecture-layer model-layer">
+          <div class="arch-node"><span>MODEL</span><strong>gravity.js</strong></div>
+          <div class="arch-node"><span>MODEL</span><strong>atmosphere.js</strong></div>
+          <div class="arch-node"><span>MODEL</span><strong>propulsion.js</strong></div>
+          <div class="arch-node"><span>MODEL</span><strong>aerodynamics.js</strong></div>
+          <div class="arch-node"><span>CONTROL</span><strong>guidance.js</strong></div>
+        </div>
+        <div class="arch-down" aria-hidden="true">↓</div>
+        <div class="architecture-layer"><div class="arch-node core-node"><span>CORE</span><strong>dynamics.js</strong><small>gravity + thrust + drag → state derivatives</small></div></div>
+        <div class="arch-down" aria-hidden="true">↓</div>
+        <div class="architecture-layer final-layer">
+          <div class="arch-node"><span>SOLVER</span><strong>integrator.js</strong></div><div class="arch-arrow" aria-hidden="true">→</div>
+          <div class="arch-node"><span>EVENTS</span><strong>staging.js</strong></div><div class="arch-arrow" aria-hidden="true">→</div>
+          <div class="arch-node"><span>ANALYSIS</span><strong>orbit.js</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="analyzer-section" id="analyzer" aria-labelledby="analyzer-title">
+      <div class="section-shell analyzer-inner">
+        <div><p class="eyebrow cyan">NEXT SYSTEM</p><h2 id="analyzer-title">From physical assumptions to orbital state.</h2><p>The analyzer interface connects vehicle definition, trajectory telemetry, staging events, and final orbital analysis.</p></div>
+        <a class="button button-primary" href="analyzer/analyzer.html">Open analyzer</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div><strong>Launch Vehicle Analyzer</strong><p>Transparent, physics-based ascent and orbital-state analysis.</p></div>
+      <nav aria-label="Footer navigation"><a href="#system">System</a><a href="#physics">Physics</a><a href="#traceability">Traceability</a><a href="validation.html">Validation</a><a href="limitations.html">Limitations</a></nav>
+    </div>
+    <div class="footer-meta"><span>Built and documented by Vedant Verma</span><span>Model v0.1 · 2026</span></div>
+  </footer>
+</body>
+</html>

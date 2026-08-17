@@ -1,0 +1,68 @@
+
+U.S. STANDARD ATMOSPHERE 1976 VALIDATION
+========================================
+Input altitude convention: GEOMETRIC altitude
+Model under test: physics/atmosphere.js
+
+    0 km geometric  ->  0.000 km geopotential
+Layer: Troposphere
+  Temperature  model=288.150000 K  ref=288.150000 K  error=0.000e+0%
+  Pressure     model=101325.000000000 Pa  ref=101325.000000000 Pa  error=0.000e+0%
+  Density      model=1.225012266 kg/m^3  ref=1.224999156 kg/m^3  error=0.001070%
+
+    5 km geometric  ->  4.996 km geopotential
+Layer: Troposphere
+  Temperature  model=255.675543 K  ref=255.675543 K  error=7.686e-11%
+  Pressure     model=54047.922628365 Pa  ref=54048.286146300 Pa  error=0.000673%
+  Density      model=0.736431349 kg/m^3  ref=0.736428421 kg/m^3  error=0.000398%
+
+   11 km geometric  ->  10.981 km geopotential
+Layer: Troposphere
+  Temperature  model=216.773513 K  ref=216.773513 K  error=2.101e-10%
+  Pressure     model=22699.597314215 Pa  ref=22699.960739200 Pa  error=0.001601%
+  Density      model=0.364799628 kg/m^3  ref=0.364801564 kg/m^3  error=0.000531%
+
+   20 km geometric  ->  19.937 km geopotential
+Layer: Tropopause / Isothermal Layer
+  Temperature  model=216.650000 K  ref=216.650000 K  error=1.312e-14%
+  Pressure     model=5529.139796870 Pa  ref=5529.311892900 Pa  error=0.003112%
+  Density      model=0.088908099 kg/m^3  ref=0.088909916 kg/m^3  error=0.002043%
+
+   32 km geometric  ->  31.840 km geopotential
+Layer: Lower Stratosphere
+  Temperature  model=228.489719 K  ref=228.489719 K  error=6.722e-11%
+  Pressure     model=889.019356621 Pa  ref=889.064416900 Pa  error=0.005068%
+  Density      model=0.013554609 kg/m^3  ref=0.013555151 kg/m^3  error=0.003998%
+
+   47 km geometric  ->  46.655 km geopotential
+Layer: Upper Stratosphere
+  Temperature  model=269.684131 K  ref=269.684131 K  error=1.388e-10%
+  Pressure     model=115.842715569 Pa  ref=115.851114000 Pa  error=0.007249%
+  Density      model=0.001496428 kg/m^3  ref=0.001496520 kg/m^3  error=0.006177%
+
+   51 km geometric  ->  50.594 km geopotential
+Layer: Stratopause / Isothermal Layer
+  Temperature  model=270.650000 K  ref=270.650000 K  error=0.000e+0%
+  Pressure     model=70.452526483 Pa  ref=70.458009000 Pa  error=0.007781%
+  Density      model=9.068406702e-4 kg/m^3  ref=9.069015000e-4 kg/m^3  error=0.006707%
+
+   71 km geometric  ->  70.216 km geopotential
+Layer: Lower Mesosphere
+  Temperature  model=216.845911 K  ref=216.845911 K  error=1.086e-10%
+  Pressure     model=4.479082590 Pa  ref=4.479563000 Pa  error=0.010724%
+  Density      model=7.195819860e-5 kg/m^3  ref=7.196520000e-5 kg/m^3  error=0.009729%
+
+   86 km geometric  ->  84.852 km geopotential
+Layer: Upper Mesosphere
+  Temperature  model=186.945908 K  ref=186.945908 K  error=1.008e-10%
+  Pressure     model=0.373330471 Pa  ref=0.373380300 Pa  error=0.013345%
+  Density      model=6.956966665e-6 kg/m^3  ref=6.957820000e-6 kg/m^3  error=0.012264%
+
+SUMMARY
+=======
+Cases tested: 9
+Maximum temperature error: 2.101e-10%
+Maximum pressure error:    0.013345%
+Maximum density error:     0.012264%
+Reporting tolerance:       0.05%
+Result: PASS
