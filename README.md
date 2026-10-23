@@ -167,9 +167,7 @@ The complete interpretation is documented in [`limitations.html`](limitations.ht
 
 ## Security and privacy
 
-AscentBench is currently a static, client-side application. It does not require user accounts or a project database. Do not place API keys, passwords, access tokens, or other secrets in browser-delivered JavaScript or commit them to this repository.
-
-The hosted production version uses restrictive browser security headers, but public client-side source code must always be assumed inspectable by visitors.
+AscentBench is currently a static, client-side application. It does not require user accounts or a project database.
 
 ## Contributing
 
